@@ -9,7 +9,7 @@
 #include <ArduinoJson.h>
 #include <mbedtls/md.h>
 
-#define LORA_CONFIG
+// #define LORA_CONFIG
 
 #define LORA_SERIAL Serial0
 constexpr uint8_t LORA_RX = 20;
@@ -243,6 +243,9 @@ void LoRaRecvTask(void *pvParameters)
       {
         sprintf((char *)&SHA256_str[i * 2], "%02x", SHA256[i]);
       }
+
+      Serial.printf("Recv RSSI: %d\n", lora_rssi);
+      Serial.println(json_string);
     }
 
     delay(100);
