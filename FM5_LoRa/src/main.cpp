@@ -148,8 +148,6 @@ void LoRaRecvTask(void *pvParameters)
 
       lora_packet = lora_packet_t;
 
-      lora.ResetBuff((byte *)&lora_packet_t, sizeof(lora_packet_t));
-
       // JSONに変換したいデータを連想配列で指定する
       json_data["Latitude"] = lora_packet.data.Latitude;
       json_data["Longitude"] = lora_packet.data.Longitude;
