@@ -11,10 +11,10 @@
 // #define LORA_CONFIG
 
 #define LORA_SERIAL Serial0
-constexpr uint8_t LORA_RX = 20;
-constexpr uint8_t LORA_TX = 21;
-constexpr uint8_t M0 = 0;
-constexpr uint8_t M1 = 1;
+constexpr uint8_t LORA_RX = 8;
+constexpr uint8_t LORA_TX = 7;
+constexpr uint8_t M0 = 5;
+constexpr uint8_t M1 = 6;
 
 #ifdef LORA_CONFIG
 #include <config_E220.h>
