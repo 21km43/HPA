@@ -1,11 +1,11 @@
 #include <Arduino.h>
-#include <E220.h>
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <mbedtls/md.h>
+#include <vector>
 
 // #define LORA_CONFIG
 
@@ -22,8 +22,6 @@ byte responcedata[11] = {0};
 
 byte set_data_buff[11] = {0x00};
 #endif
-E220 lora(LORA_SERIAL, 0x4D, 0x46, 0x0A); // TARGETADRESS=0x4D46, CHANNEL=0x0A
-
 constexpr char SSID[] = "FM5_LoRa";
 constexpr char PASSPHRASE[] = "FM5_Password";
 
@@ -89,8 +87,8 @@ struct LoRaPacket
   uint32_t CRC32;
 };
 
-// パケットサイズは199Byte以下にすること
-static_assert(sizeof(LoRaPacket) <= 199, "LoRaPacket size is too large! Keep packet size under 199 Bytes.");
+// パケットサイズは200Byte以下にすること
+static_assert(sizeof(LoRaPacket) <= 200, "LoRaPacket size is too large! Keep packet size under 200 Bytes.");
 
 constexpr char AID[] = "7777";
 // JSON構造体、文字列
@@ -99,6 +97,8 @@ char json_string[4096];
 // json_stringのSHA256（HEX文字列）
 char SHA256_str[64 + 1];
 // LoRaのパケットとRSSI
+std::vector<uint8_t> lora_packet_buff;
+bool lora_received = false;
 LoRaPacket lora_packet;
 int lora_rssi = 0;
 
@@ -119,31 +119,31 @@ void LoRaRecvTask(void *pvParameters)
 {
   while (1)
   {
-    LoRaPacket lora_packet_t;
-    int rxLength = lora.ReceiveDataVariebleLength((byte *)&lora_packet_t, sizeof(lora_packet_t), &lora_rssi);
-    if (rxLength)
+    while (Serial.available() > 0)
     {
-      if (rxLength != sizeof(lora_packet_t))
+      lora_packet_buff.push_back(Serial.read());
+      if (lora_packet_buff.size() == sizeof(LoRaPacket))
       {
-        Serial.println("Data Length Error");
-        continue;
+        uint32_t crc32 = (~crc32_le((uint32_t)~(0xffffffff), lora_packet_buff.data(), sizeof(LoRaData))) ^ 0xffffffff;
+        if ((uint32_t)(lora_packet_buff.data() + sizeof(LoRaData)) == crc32)
+        {
+          memcpy(&lora_packet, lora_packet_buff.data(), sizeof(LoRaPacket));
+          delay(10);
+          lora_rssi = LORA_SERIAL.read();
+          lora_received = true;
+          break;
+        }
+        else
+        {
+          lora_packet_buff.erase(lora_packet_buff.begin());
+        } 
       }
+    }
 
-      uint32_t crc32 = (~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet_t.data), sizeof(lora_packet_t.data))) ^ 0xffffffff;
-      if (lora_packet_t.CRC32 != crc32)
-      {
-        Serial.println("CRC32 Error");
-        Serial.printf("CRC32 (Calc): %08X\n", crc32);
-        Serial.printf("CRC32 (Recv): %08X\n", lora_packet_t.CRC32);
-        LORA_SERIAL.end();
-        delay(100);
-        LORA_SERIAL.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
-        continue;
-      }
-      
+    if (lora_received)
+    {
+      lora_received = false;
       Serial.printf("LoRa RSSI: %d dBm\n", lora_rssi);
-
-      lora_packet = lora_packet_t;
 
       // JSONに変換したいデータを連想配列で指定する
       json_data["Latitude"] = lora_packet.data.Latitude;

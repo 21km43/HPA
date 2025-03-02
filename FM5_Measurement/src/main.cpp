@@ -8,7 +8,6 @@
 #include <M5_IMU_PRO.h>
 #include <MadgwickAHRS.h>
 #include <MahonyAHRS.h>
-#include <E220.h>
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <ArduinoOTA.h>
@@ -613,9 +612,6 @@ void InitSD()
 #pragma region SERVER
 
 #pragma region LORA
-// LoRa関連
-E220 lora(LORA_SERIAL, 0x4D, 0x46, 0x0A); // TARGETADRESS=0x4D46, CHANNEL=0x0A
-
 #pragma pack(1)
 struct LoRaData
 {
@@ -671,8 +667,8 @@ struct LoRaPacket
   uint32_t CRC32;
 };
 
-// パケットサイズは199Byte以下にすること
-static_assert(sizeof(LoRaPacket) <= 199, "LoRaPacket size is too large! Keep packet size under 199 Bytes.");
+// パケットサイズは200Byte以下にすること
+static_assert(sizeof(LoRaPacket) <= 200, "LoRaPacket size is too large! Keep packet size under 200 Bytes.");
 
 void LoRaSendTask(void *pvParameters)
 {
@@ -726,7 +722,7 @@ void LoRaSendTask(void *pvParameters)
 
     lora_packet.CRC32 = (~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet.data), sizeof(lora_packet.data))) ^ 0xffffffff;
 
-    lora.TransmissionDataVariebleLength((byte *)&lora_packet, sizeof(lora_packet));
+    LORA_SERIAL.write((byte *)&lora_packet, sizeof(lora_packet));
 
     delay(100);
   }
