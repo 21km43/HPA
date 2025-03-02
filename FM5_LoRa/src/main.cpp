@@ -202,7 +202,8 @@ void LoRaRecvTask(void *pvParameters)
         continue;
       }
 
-      if (lora_packet_t.CRC32 != ((~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet_t.data), sizeof(lora_packet_t.data))) ^ 0xffffffff))
+      uint32_t crc32 = (~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet_t.data), sizeof(lora_packet_t.data))) ^ 0xffffffff;
+      if (lora_packet_t.CRC32 != crc32)
       {
         Serial.println("CRC32 Error");
         continue;
