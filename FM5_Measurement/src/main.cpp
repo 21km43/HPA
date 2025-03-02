@@ -843,6 +843,7 @@ void handleGetMeasurementData()
   json_data["Rudder"] = rudder_rotation;
   json_data["Elevator"] = elevator_rotation;
   json_data["Trim"] = trim;
+  json_data["LoRaRSSI"] = 0;
   json_data["RunningTime"] = millis() / 1000.0;
 
   char time_str[32];

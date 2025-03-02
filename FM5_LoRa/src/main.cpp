@@ -144,7 +144,7 @@ void LoRaRecvTask(void *pvParameters)
         continue;
       }
       
-      Serial.printf("LoRa RSSI: %d\n", lora_rssi);
+      Serial.printf("LoRa RSSI: %d dBm\n", lora_rssi);
 
       lora_packet = lora_packet_t;
 
@@ -187,6 +187,7 @@ void LoRaRecvTask(void *pvParameters)
       json_data["Rudder"] = lora_packet.data.Rudder;
       json_data["Elevator"] = lora_packet.data.Elevator;
       json_data["Trim"] = lora_packet.data.Trim;
+      json_data["LoRaRSSI"] = lora_rssi;
       json_data["RunningTime"] = lora_packet.data.RunningTime;
 
       char time_str[32];
@@ -208,7 +209,7 @@ void LoRaRecvTask(void *pvParameters)
       Serial.println(json_string);
     }
 
-    delay(100);
+    delay(10);
   }
 }
 
