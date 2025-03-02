@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <E220.h>
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
