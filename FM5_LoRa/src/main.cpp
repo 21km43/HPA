@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
-#include <M5_LoRa_E220_JP.h>
+#include <E220.h>
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <WebServer.h>
@@ -14,6 +14,19 @@
 #define LORA_SERIAL Serial0
 constexpr uint8_t LORA_RX = 20;
 constexpr uint8_t LORA_TX = 21;
+constexpr uint8_t M0 = 0;
+constexpr uint8_t M1 = 1;
+
+#ifdef LORA_CONFIG
+#include <config_E220.h>
+config_E220 e220conf(LORA_SERIAL, M0, M1);
+
+const int module_addr = 0x01;
+byte responcedata[11] = {0};
+
+byte set_data_buff[11] = {0x00};
+#endif
+E220 lora(LORA_SERIAL, 0x4D, 0x46, 0x0A); // TARGETADRESS=0x4D46, CHANNEL=0x0A
 
 constexpr char SSID[] = "FM5_LoRa";
 constexpr char PASSPHRASE[] = "FM5_Password";
@@ -94,18 +107,15 @@ void setupOTA(const char *nameprefix, const char *ssid, const char *password)
 #pragma region SERVER
 
 #pragma region LORA
-// LoRa関連
-LoRa_E220_JP lora;
-struct LoRaConfigItem_t lora_config;
-
+#pragma pack(1)
 struct LoRaData
 {
-  int GPSYear;
-  int GPSMonth;
-  int GPSDay;
-  int GPSHour;
-  int GPSMinute;
-  int GPSSecond;
+  int16_t GPSYear;
+  int8_t GPSMonth;
+  int8_t GPSDay;
+  int8_t GPSHour;
+  int8_t GPSMinute;
+  int8_t GPSSecond;
   double Latitude;
   double Longitude;
   double GPSAltitude;
@@ -152,8 +162,8 @@ struct LoRaPacket
   uint32_t CRC32;
 };
 
-// パケットサイズは200バイト以下にすること
-static_assert(sizeof(LoRaPacket) <= 200, "LoRaPacket size is too large! Keep packet size under 200 Bytes.");
+// パケットサイズは199Byte以下にすること
+static_assert(sizeof(LoRaPacket) <= 199, "LoRaPacket size is too large! Keep packet size under 199 Bytes.");
 
 constexpr char AID[] = "7777";
 // JSON構造体、文字列
@@ -182,12 +192,25 @@ void LoRaRecvTask(void *pvParameters)
 {
   while (1)
   {
-    RecvFrame_t lora_frame;
-
-    if (lora.RecieveFrame(&lora_frame) == 0 && lora_frame.recv_data_len == sizeof(LoRaPacket) && (*((LoRaPacket *)(lora_frame.recv_data))).CRC32 == ((~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&((*((LoRaPacket *)(lora_frame.recv_data))).data), sizeof(LoRaData))) ^ 0xffffffff))
+    LoRaPacket lora_packet_t;
+    int rxLength = lora.ReceiveDataVariebleLength((byte *)&lora_packet_t, sizeof(LoRaPacket), &lora_rssi);
+    if (rxLength)
     {
-      lora_rssi = lora_frame.rssi;
-      memcpy(&lora_packet, lora_frame.recv_data, lora_frame.recv_data_len);
+      if (rxLength != sizeof(LoRaPacket))
+      {
+        Serial.println("Data Length Error");
+        continue;
+      }
+
+      if (lora_packet_t.CRC32 != ((~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet_t.data), sizeof(lora_packet_t.data))) ^ 0xffffffff))
+      {
+        Serial.println("CRC32 Error");
+        continue;
+      }
+      
+      Serial.printf("LoRa RSSI: %d\n", lora_rssi);
+
+      lora_packet = lora_packet_t;
 
       // JSONに変換したいデータを連想配列で指定する
       json_data["Latitude"] = lora_packet.data.Latitude;
@@ -244,7 +267,6 @@ void LoRaRecvTask(void *pvParameters)
         sprintf((char *)&SHA256_str[i * 2], "%02x", SHA256[i]);
       }
 
-      Serial.printf("Recv RSSI: %d\n", lora_rssi);
       Serial.println(json_string);
     }
 
@@ -254,44 +276,8 @@ void LoRaRecvTask(void *pvParameters)
 
 void InitLoRa()
 {
-  lora.Init(&LORA_SERIAL, 9600, SERIAL_8N1, LORA_RX, LORA_TX);
-
-  lora.SetDefaultConfigValue(lora_config);
-
-  lora_config.own_address = 0x0000;
-  lora_config.baud_rate = BAUD_9600;
-  lora_config.air_data_rate = BW500K_SF5;
-  lora_config.subpacket_size = SUBPACKET_200_BYTE;
-  lora_config.rssi_ambient_noise_flag = RSSI_AMBIENT_NOISE_ENABLE;
-  lora_config.transmitting_power = TX_POWER_13dBm;
-  lora_config.own_channel = 0x0A;
-  lora_config.rssi_byte_flag = RSSI_BYTE_ENABLE;
-  lora_config.transmission_method_type = UART_P2P_MODE;
-  lora_config.lbt_flag = LBT_DISABLE;
-  lora_config.wor_cycle = WOR_2000MS;
-  lora_config.encryption_key = 0x1234;
-  lora_config.target_address = 0x0000;
-  lora_config.target_channel = 0x0A;
-
-#ifdef LORA_CONFIG
-  if (lora.InitLoRaSetting(lora_config) != 0)
-  {
-    while (1)
-    {
-      Serial.println("LoRa configure failed!");
-      Serial.println("Please pull the M0, M1 to HIGH if you want to configure the LoRa module.");
-      delay(1000);
-    }
-  }
-  else
-  {
-    while (1)
-    {
-      Serial.println("LoRa Configuretion OK!");
-      delay(1000);
-    }
-  }
-#else
+  LORA_SERIAL.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
+#ifndef LORA_CONFIG
   xTaskCreatePinnedToCore(LoRaRecvTask, "LoRaRecvTask", 8192, NULL, 1, NULL, 0);
 #endif
 }
@@ -329,13 +315,163 @@ void setup()
 {
   Serial.begin(115200);
 
-  InitServer();
-  delay(100);
   InitLoRa();
   delay(100);
+#ifndef LORA_CONFIG
+  pinMode(M0, OUTPUT);
+  pinMode(M1, OUTPUT);
+  digitalWrite(M0, LOW);
+  digitalWrite(M1, LOW);
+  InitServer();
+  delay(100);
+#endif
 }
 
 void loop()
 {
+#ifdef LORA_CONFIG
+  String serial_input;
+  if (Serial.available() > 0)
+  {
+    serial_input = Serial.readStringUntil('\n');
+    serial_input.trim();
+  }
+
+  // show command
+  if (serial_input.equals("show") > 0)
+  {
+    e220conf.Show();
+  }
+  // address command
+  if (serial_input.startsWith("address "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String addressStr = serial_input.substring(spaceIndex + 1);
+    int address = addressStr.toInt();
+    e220conf.SetAddress(address, set_data_buff);
+    byte w_data_buff[2];
+    w_data_buff[0] = set_data_buff[0];
+    w_data_buff[1] = set_data_buff[1];
+    e220conf.WriteResister(0x00, 0x02, w_data_buff);
+  }
+  // bandrate command
+  if (serial_input.startsWith("baudrate "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String baudrateStr = serial_input.substring(spaceIndex + 1);
+    int baudrate = baudrateStr.toInt();
+    e220conf.SetUartBaudrate(baudrate, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[2];
+    e220conf.WriteResister(0x02, 0x01, w_data_buff);
+  }
+  // sf command
+  if (serial_input.startsWith("sf "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String sfStr = serial_input.substring(spaceIndex + 1);
+    int sf = sfStr.toInt();
+    e220conf.SetSF(sf, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[2];
+    e220conf.WriteResister(0x02, 0x01, w_data_buff);
+  }
+  // bw command
+  if (serial_input.startsWith("bw "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String bwStr = serial_input.substring(spaceIndex + 1);
+    int bw = bwStr.toInt();
+    e220conf.SetBW(bw, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[2];
+    e220conf.WriteResister(0x02, 0x01, w_data_buff);
+  }
+  // subpacketlength command
+  if (serial_input.startsWith("subpacket "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String subpacketlengthStr = serial_input.substring(spaceIndex + 1);
+    int subpacketlength = subpacketlengthStr.toInt();
+    e220conf.SetSubpacketLength(subpacketlength, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[3];
+    e220conf.WriteResister(0x03, 0x01, w_data_buff);
+  }
+  // power command
+  if (serial_input.startsWith("power "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String powerStr = serial_input.substring(spaceIndex + 1);
+    int power = powerStr.toInt();
+    e220conf.SetTxPower(power, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[3];
+    e220conf.WriteResister(0x03, 0x01, w_data_buff);
+  }
+  // channel command
+  if (serial_input.startsWith("channel "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String channelStr = serial_input.substring(spaceIndex + 1);
+    int channel = channelStr.toInt();
+    e220conf.SetChannel(channel, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[4];
+    e220conf.WriteResister(0x04, 0x01, w_data_buff);
+  }
+  // worcycle command
+  if (serial_input.startsWith("worcycle "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String worcycleStr = serial_input.substring(spaceIndex + 1);
+    int worcycle = worcycleStr.toInt();
+    e220conf.SetWorCycle(worcycle, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[5];
+    e220conf.WriteResister(0x05, 0x01, w_data_buff);
+  }
+  // rssi_noise command
+  if (serial_input.startsWith("rssi_noise "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String rssi_noiseStr = serial_input.substring(spaceIndex + 1);
+    int rssi_noise = rssi_noiseStr.toInt();
+    e220conf.SetRssiNoiseAvailable(rssi_noise, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[3];
+    e220conf.WriteResister(0x03, 0x01, w_data_buff);
+  }
+  // rssi_byte command
+  if (serial_input.startsWith("rssi_byte "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String rssi_byteStr = serial_input.substring(spaceIndex + 1);
+    int rssi_byte = rssi_byteStr.toInt();
+    e220conf.SetRssiByteAvailable(rssi_byte, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[5];
+    e220conf.WriteResister(0x05, 0x01, w_data_buff);
+  }
+  // tx_method command
+  if (serial_input.startsWith("tx_method "))
+  {
+    int spaceIndex = serial_input.indexOf(' ');
+    String tx_methodStr = serial_input.substring(spaceIndex + 1);
+    int tx_method = tx_methodStr.toInt();
+    e220conf.SetTxMethod(tx_method, set_data_buff);
+    byte w_data_buff[1];
+    w_data_buff[0] = set_data_buff[5];
+    e220conf.WriteResister(0x05, 0x01, w_data_buff);
+  }
+  // default command
+  if (serial_input.equals("default") > 0)
+  {
+    e220conf.SetDefault();
+  }
+
+  delay(10);
+#else
   server.handleClient();
+#endif
 }

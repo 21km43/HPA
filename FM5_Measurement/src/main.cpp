@@ -8,7 +8,7 @@
 #include <M5_IMU_PRO.h>
 #include <MadgwickAHRS.h>
 #include <MahonyAHRS.h>
-#include <M5_LoRa_E220_JP.h>
+#include <E220.h>
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <ArduinoOTA.h>
@@ -20,14 +20,12 @@
 #include <TinyGPS++.h>
 #include <mbedtls/md.h>
 
-// #define LORA_CONFIG
-
 SoftwareSerial GPSSerial;
 SoftwareSerial ALTSerial;
 SoftwareSerial CtrlSerial;
 #define LORA_SERIAL Serial1
 
-constexpr char SSID[] = "FM5_FM5_Measurement";
+constexpr char SSID[] = "FM5_Measurement";
 constexpr char PASSPHRASE[] = "FM5_Password";
 
 const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
@@ -616,17 +614,17 @@ void InitSD()
 
 #pragma region LORA
 // LoRa関連
-LoRa_E220_JP lora;
-struct LoRaConfigItem_t lora_config;
+E220 lora(LORA_SERIAL, 0x4D, 0x46, 0x0A); // TARGETADRESS=0x4D46, CHANNEL=0x0A
 
+#pragma pack(1)
 struct LoRaData
 {
-  int GPSYear;
-  int GPSMonth;
-  int GPSDay;
-  int GPSHour;
-  int GPSMinute;
-  int GPSSecond;
+  int16_t GPSYear;
+  int8_t GPSMonth;
+  int8_t GPSDay;
+  int8_t GPSHour;
+  int8_t GPSMinute;
+  int8_t GPSSecond;
   double Latitude;
   double Longitude;
   double GPSAltitude;
@@ -673,8 +671,8 @@ struct LoRaPacket
   uint32_t CRC32;
 };
 
-// パケットサイズは200バイト以下にすること
-static_assert(sizeof(LoRaPacket) <= 200, "LoRaPacket size is too large! Keep packet size under 200 Bytes.");
+// パケットサイズは199Byte以下にすること
+static_assert(sizeof(LoRaPacket) <= 199, "LoRaPacket size is too large! Keep packet size under 199 Bytes.");
 
 void LoRaSendTask(void *pvParameters)
 {
@@ -728,7 +726,7 @@ void LoRaSendTask(void *pvParameters)
 
     lora_packet.CRC32 = (~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet.data), sizeof(lora_packet.data))) ^ 0xffffffff;
 
-    lora.SendFrame(lora_config, (uint8_t *)&lora_packet, sizeof(lora_packet));
+    lora.TransmissionDataVariebleLength((byte *)&lora_packet, sizeof(lora_packet));
 
     delay(100);
   }
@@ -736,46 +734,8 @@ void LoRaSendTask(void *pvParameters)
 
 void InitLoRa()
 {
-  lora.Init(&LORA_SERIAL, 9600, SERIAL_8N1, LORA_RX, LORA_TX);
-
-  lora.SetDefaultConfigValue(lora_config);
-
-  lora_config.own_address = 0x0000;
-  lora_config.baud_rate = BAUD_9600;
-  lora_config.air_data_rate = BW500K_SF5;
-  lora_config.subpacket_size = SUBPACKET_200_BYTE;
-  lora_config.rssi_ambient_noise_flag = RSSI_AMBIENT_NOISE_ENABLE;
-  lora_config.transmitting_power = TX_POWER_13dBm;
-  lora_config.own_channel = 0x0A;
-  lora_config.rssi_byte_flag = RSSI_BYTE_ENABLE;
-  lora_config.transmission_method_type = UART_P2P_MODE;
-  lora_config.lbt_flag = LBT_DISABLE;
-  lora_config.wor_cycle = WOR_2000MS;
-  lora_config.encryption_key = 0x1234;
-  lora_config.target_address = 0x0000;
-  lora_config.target_channel = 0x0A;
-
-#ifdef LORA_CONFIG
-  if (lora.InitLoRaSetting(lora_config) != 0)
-  {
-    while (1)
-    {
-      Serial.println("LoRa configure failed!");
-      Serial.println("Please pull the M0, M1 to HIGH if you want to configure the LoRa module.");
-      delay(1000);
-    }
-  }
-  else
-  {
-    while (1)
-    {
-      Serial.println("LoRa Configuretion OK!");
-      delay(1000);
-    }
-  }
-#else
+  LORA_SERIAL.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
   xTaskCreatePinnedToCore(LoRaSendTask, "LoRaSendTask", 8192, NULL, 1, NULL, 0);
-#endif
 }
 #pragma endregion
 
@@ -1011,21 +971,21 @@ void loop()
     CoreS3.Display.setCursor(0, 0);
     CoreS3.Display.clear();
 
-    // CoreS3.Display.printf("Temperature: %f *C\r\n", temperature);
-    // CoreS3.Display.printf("Pressure: %f Pa\r\n", pressure);
-    CoreS3.Display.printf("Altitude: %f m\r\n", altitude);
-    // CoreS3.Display.printf("BMP Altitude: %f m\r\n", bmp_altitude);
+    // CoreS3.Display.printf("Temperature: %.2f *C\r\n", temperature);
+    // CoreS3.Display.printf("Pressure: %.2f Pa\r\n", pressure);
+    CoreS3.Display.printf("Altitude: %.2f m\r\n", altitude);
+    // CoreS3.Display.printf("BMP Altitude: %.2f m\r\n", bmp_altitude);
     CoreS3.Display.printf("GPS Time: %d-%d-%d %d:%02d:%02d\r\n", gps_year, gps_month, gps_day, gps_hour, gps_minute, gps_second);
     CoreS3.Display.printf("Latitude: %.9f, Longitude: %.9f\r\n", gps_latitude, gps_longitude);
-    // CoreS3.Display.printf("GPS Altitude: %f m\r\n", gps_altitude);
-    // CoreS3.Display.printf("GPS Course: %f deg\r\n", gps_course);
-    // CoreS3.Display.printf("GPS Speed: %f m/s\r\n", gps_speed);
-    // CoreS3.Display.printf("ax: %f, ay: %f, az: %f\r\n", accelX, accelY, accelZ);
-    // CoreS3.Display.printf("gx: %f, gy: %f, gz: %f\r\n", gyroX, gyroY, gyroZ);
+    // CoreS3.Display.printf("GPS Altitude: %.2f m\r\n", gps_altitude);
+    // CoreS3.Display.printf("GPS Course: %.2f deg\r\n", gps_course);
+    // CoreS3.Display.printf("GPS Speed: %.2f m/s\r\n", gps_speed);
+    // CoreS3.Display.printf("ax: %.2f, ay: %.2f, az: %.2f\r\n", accelX, accelY, accelZ);
+    // CoreS3.Display.printf("gx: %.2f, gy: %.2f, gz: %.2f\r\n", gyroX, gyroY, gyroZ);
     // CoreS3.Display.printf("mx: %d, my: %d, mz: %d\r\n", magX, magY, magZ);
-    CoreS3.Display.printf("Roll: %f, Pitch: %f, Yaw: %f\r\n", roll_mad9, pitch_mad9, yaw_mad9);
-    CoreS3.Display.printf("Air Speed: %f\r\n", air_speed);
+    CoreS3.Display.printf("Roll: %.2f, Pitch: %.2f, Yaw: %.2f\r\n", roll_mad9, pitch_mad9, yaw_mad9);
+    CoreS3.Display.printf("Air Speed: %.2f\r\n", air_speed);
     CoreS3.Display.printf("Propeller Rotation Speed: %d\r\n", propeller_rotation);
-    CoreS3.Display.printf("Rudder: %f, Elevator: %f, Trim: %f\r\n", rudder_rotation, elevator_rotation, trim);
+    CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %.2f\r\n", rudder_rotation, elevator_rotation, trim);
   }
 }
