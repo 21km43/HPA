@@ -728,6 +728,8 @@ void LoRaSendTask(void *pvParameters)
 
     lora.TransmissionDataVariebleLength((byte *)&lora_packet, sizeof(lora_packet));
 
+    lora.ResetBuff((byte *)&lora_packet, sizeof(lora_packet));
+
     delay(100);
   }
 }

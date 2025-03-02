@@ -123,10 +123,10 @@ void LoRaRecvTask(void *pvParameters)
   while (1)
   {
     LoRaPacket lora_packet_t;
-    int rxLength = lora.ReceiveDataVariebleLength((byte *)&lora_packet_t, sizeof(LoRaPacket), &lora_rssi);
+    int rxLength = lora.ReceiveDataVariebleLength((byte *)&lora_packet_t, sizeof(lora_packet_t), &lora_rssi);
     if (rxLength)
     {
-      if (rxLength != sizeof(LoRaPacket))
+      if (rxLength != sizeof(lora_packet_t))
       {
         Serial.println("Data Length Error");
         continue;
@@ -136,12 +136,16 @@ void LoRaRecvTask(void *pvParameters)
       if (lora_packet_t.CRC32 != crc32)
       {
         Serial.println("CRC32 Error");
+        Serial.printf("CRC32 (Calc): %08X\n", crc32);
+        Serial.printf("CRC32 (Recv): %08X\n", lora_packet_t.CRC32);
         continue;
       }
       
       Serial.printf("LoRa RSSI: %d\n", lora_rssi);
 
       lora_packet = lora_packet_t;
+
+      lora.ResetBuff((byte *)&lora_packet_t, sizeof(lora_packet_t));
 
       // JSONに変換したいデータを連想配列で指定する
       json_data["Latitude"] = lora_packet.data.Latitude;
