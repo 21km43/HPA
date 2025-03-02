@@ -18,8 +18,6 @@ constexpr uint8_t M1 = 6;
 #ifdef LORA_CONFIG
 #include <config_E220.h>
 config_E220 e220conf(LORA_SERIAL, M0, M1);
-
-const int module_addr = 0x01;
 byte responcedata[11] = {0};
 
 byte set_data_buff[11] = {0x00};
