@@ -138,6 +138,9 @@ void LoRaRecvTask(void *pvParameters)
         Serial.println("CRC32 Error");
         Serial.printf("CRC32 (Calc): %08X\n", crc32);
         Serial.printf("CRC32 (Recv): %08X\n", lora_packet_t.CRC32);
+        LORA_SERIAL.end();
+        delay(100);
+        LORA_SERIAL.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
         continue;
       }
       
