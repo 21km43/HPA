@@ -31,7 +31,7 @@ E220 lora(LORA_SERIAL, 0x4D, 0x46, 0x0A); // TARGETADRESS=0x4D46, CHANNEL=0x0A
 constexpr char SSID[] = "FM5_LoRa";
 constexpr char PASSPHRASE[] = "FM5_Password";
 
-const IPAddress localIP(192, 168, 43, 141); // 自身のIPアドレス
+const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
 const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ
 const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
 
