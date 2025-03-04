@@ -125,7 +125,7 @@ void LoRaRecvTask(void *pvParameters)
       if (lora_packet_buff.size() == sizeof(LoRaPacket))
       {
         uint32_t crc32 = (~crc32_le((uint32_t)~(0xffffffff), lora_packet_buff.data(), sizeof(LoRaData))) ^ 0xffffffff;
-        if ((uint32_t)(lora_packet_buff.data() + sizeof(LoRaData)) == crc32)
+        if ((*(uint32_t*)(lora_packet_buff.data() + sizeof(LoRaData))) == crc32)
         {
           memcpy(&lora_packet, lora_packet_buff.data(), sizeof(LoRaPacket));
           delay(10);
