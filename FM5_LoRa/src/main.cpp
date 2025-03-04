@@ -130,7 +130,7 @@ void LoRaRecvTask(void *pvParameters)
           memcpy(&lora_packet, lora_packet_buff.data(), sizeof(LoRaPacket));
           lora_packet_buff.clear();
           delay(10);
-          lora_rssi = LORA_SERIAL.read();
+          lora_rssi = LORA_SERIAL.read() - 255;
           lora_received = true;
           break;
         }
