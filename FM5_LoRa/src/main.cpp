@@ -119,15 +119,16 @@ void LoRaRecvTask(void *pvParameters)
 {
   while (1)
   {
-    while (Serial.available() > 0)
+    while (LORA_SERIAL.available() > 0)
     {
-      lora_packet_buff.push_back(Serial.read());
+      lora_packet_buff.push_back(LORA_SERIAL.read());
       if (lora_packet_buff.size() == sizeof(LoRaPacket))
       {
         uint32_t crc32 = (~crc32_le((uint32_t)~(0xffffffff), lora_packet_buff.data(), sizeof(LoRaData))) ^ 0xffffffff;
         if ((*(uint32_t*)(lora_packet_buff.data() + sizeof(LoRaData))) == crc32)
         {
           memcpy(&lora_packet, lora_packet_buff.data(), sizeof(LoRaPacket));
+          lora_packet_buff.clear();
           delay(10);
           lora_rssi = LORA_SERIAL.read();
           lora_received = true;
