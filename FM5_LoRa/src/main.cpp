@@ -144,7 +144,6 @@ void LoRaRecvTask(void *pvParameters)
     if (lora_received)
     {
       lora_received = false;
-      Serial.printf("LoRa RSSI: %d dBm\n", lora_rssi);
 
       // JSONに変換したいデータを連想配列で指定する
       json_data["Latitude"] = lora_packet.data.Latitude;
