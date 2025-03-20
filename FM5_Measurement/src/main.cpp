@@ -33,10 +33,10 @@ const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
 
 constexpr char AID[] = "7777";
 constexpr int GPS_RX = 7, GPS_TX = 6;
-constexpr int ALT_RX = 8, ALT_TX = 9, ALT_REDE_PIN = 14;
+constexpr int ALT_RX = 8, ALT_TX = 9, ALT_REDE_PIN = 10;
 constexpr int LORA_RX = 18, LORA_TX = 17;
 constexpr int CTRL_RX = 13, CTRL_TX = 5;
-constexpr int RPM_PIN = 10;
+constexpr int RPM_PIN = 14;
 constexpr int TACHO_PIN[2] = {1, 2};
 constexpr int SD_SPI_SCK_PIN = 36;
 constexpr int SD_SPI_MISO_PIN = 35;
@@ -321,15 +321,9 @@ void altitude_task(void *pvParameters)
       uint8_t buff[16];
       int recvSize = ALTSerial.readBytes(buff, dataLen);
       uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), buff, 5)) ^ 0xffff;
-      if (crc16 == *((uint16_t *)(buff + 5)))
-      {
-        uint16_t dist = buff[3] << 8 | buff[4];
-        altitude = dist / 1000.0f;
-      }
-      else
-      {
-        Serial.println("CRC Error (Altitude Sensor)");
-      }
+      
+      uint16_t dist = buff[3] << 8 | buff[4];
+      altitude = dist / 1000.0f;
     }
     delay(200);
   }
