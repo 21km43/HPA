@@ -320,7 +320,7 @@ void altitude_task(void *pvParameters)
     {
       uint8_t buff[16];
       int recvSize = ALTSerial.readBytes(buff, dataLen);
-      uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), buff, 5)) ^ 0xffff;
+      // uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), buff, 5)) ^ 0xffff;
       
       uint16_t dist = buff[3] << 8 | buff[4];
       altitude = dist / 1000.0f;
@@ -895,13 +895,11 @@ void GetControlData()
   {
     ControlPacket ctrl_packet;
     CtrlSerial.readBytes((uint8_t *)&ctrl_packet, sizeof(ControlPacket));
-    uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), (uint8_t *)&ctrl_packet.data, sizeof(ctrl_packet.data))) ^ 0xffff;
-    if (crc16 == ctrl_packet.CRC16)
-    {
-      rudder_rotation = ctrl_packet.data.Rudder;
-      elevator_rotation = ctrl_packet.data.Elevator;
-      trim = ctrl_packet.data.Trim;
-    }
+    // uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), (uint8_t *)&ctrl_packet.data, sizeof(ctrl_packet.data))) ^ 0xffff;
+    
+    rudder_rotation = ctrl_packet.data.Rudder;
+    elevator_rotation = ctrl_packet.data.Elevator;
+    trim = ctrl_packet.data.Trim;
   }
 }
 #pragma endregion
