@@ -19,10 +19,10 @@
 #include <TinyGPS++.h>
 #include <mbedtls/md.h>
 
-SoftwareSerial GPSSerial;
 SoftwareSerial ALTSerial;
 SoftwareSerial CtrlSerial;
 #define LORA_SERIAL Serial1
+#define GPSSerial Serial2
 
 constexpr char SSID[] = "FM5_Measurement";
 constexpr char PASSPHRASE[] = "FM5_Password";
@@ -232,7 +232,7 @@ double gps_speed = 0;     // 対地速度(m/s) 精度は高くないので参考
 
 void InitGPS()
 {
-  GPSSerial.begin(38400, SWSERIAL_8N1, GPS_RX, GPS_TX);
+  GPSSerial.begin(38400, SERIAL_8N1, GPS_RX, GPS_TX);
 }
 void GetGPS()
 {
@@ -320,7 +320,6 @@ void altitude_task(void *pvParameters)
     {
       uint8_t buff[16];
       int recvSize = ALTSerial.readBytes(buff, dataLen);
-      // uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), buff, 5)) ^ 0xffff;
       
       uint16_t dist = buff[3] << 8 | buff[4];
       altitude = dist / 1000.0f;
@@ -876,11 +875,6 @@ struct ControlData
   float Elevator;
   float Trim;
 };
-struct ControlPacket
-{
-  ControlData data;
-  uint16_t CRC16;
-};
 
 constexpr char CTRL_TAG[2] = {'C', 'T'};
 
@@ -891,15 +885,14 @@ void InitUARTToControl()
 
 void GetControlData()
 {
-  while (CtrlSerial.available() >= (sizeof(ControlPacket) + sizeof(CTRL_TAG)) && CtrlSerial.read() == CTRL_TAG[0] && CtrlSerial.read() == CTRL_TAG[1])
+  while (CtrlSerial.available() >= (sizeof(ControlData) + sizeof(CTRL_TAG)) && CtrlSerial.read() == CTRL_TAG[0] && CtrlSerial.read() == CTRL_TAG[1])
   {
-    ControlPacket ctrl_packet;
-    CtrlSerial.readBytes((uint8_t *)&ctrl_packet, sizeof(ControlPacket));
-    // uint16_t crc16 = (~crc16_le((uint16_t)~(0xffff), (uint8_t *)&ctrl_packet.data, sizeof(ctrl_packet.data))) ^ 0xffff;
+    ControlData ctrl_data;
+    CtrlSerial.readBytes((uint8_t *)&ctrl_data, sizeof(ControlData));
     
-    rudder_rotation = ctrl_packet.data.Rudder;
-    elevator_rotation = ctrl_packet.data.Elevator;
-    trim = ctrl_packet.data.Trim;
+    rudder_rotation = ctrl_data.Rudder;
+    elevator_rotation = ctrl_data.Elevator;
+    trim = ctrl_data.Trim;
   }
 }
 #pragma endregion
