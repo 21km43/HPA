@@ -90,7 +90,6 @@ struct LoRaPacket
 // パケットサイズは200Byte以下にすること
 static_assert(sizeof(LoRaPacket) <= 200, "LoRaPacket size is too large! Keep packet size under 200 Bytes.");
 
-constexpr char AID[] = "7777";
 // JSON構造体、文字列
 JsonDocument json_array, json_data;
 char json_string[4096];
@@ -187,7 +186,6 @@ void LoRaRecvTask(void *pvParameters)
 
       char time_str[32];
       sprintf(time_str, "%d-%d-%d %d:%02d:%02d", lora_packet.data.GPSYear, lora_packet.data.GPSMonth, lora_packet.data.GPSDay, lora_packet.data.GPSHour, lora_packet.data.GPSMinute, lora_packet.data.GPSSecond);
-      json_array["AID"] = AID;
       json_array["Time"] = time_str;
       json_array["data"] = json_data;
 

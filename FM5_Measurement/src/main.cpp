@@ -18,20 +18,21 @@
 #include <SD.h>
 #include <TinyGPS++.h>
 #include <mbedtls/md.h>
+#include <WiFiClientSecure.h>
+#include <MQTTClient.h>
+#include "secrets.h"
 
 SoftwareSerial ALTSerial;
 SoftwareSerial CtrlSerial;
-#define LORA_SERIAL Serial1
+#define LoRaSerial Serial1
 #define GPSSerial Serial2
-
-constexpr char SSID[] = "FM5_Measurement";
-constexpr char PASSPHRASE[] = "FM5_Password";
 
 const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
 const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ
-const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
+const IPAddress subnet(255, 255, 255, 0);  // サブネットマスク
+const IPAddress dns1(8, 8, 8, 8);          // 優先DNS
+const IPAddress dns2(8, 8, 4, 4);          // 代替DNS
 
-constexpr char AID[] = "7777";
 constexpr int GPS_RX = 7, GPS_TX = 6;
 constexpr int ALT_RX = 8, ALT_TX = 9, ALT_REDE_PIN = 10;
 constexpr int LORA_RX = 18, LORA_TX = 17;
@@ -57,7 +58,7 @@ void ota_handle(void *parameter)
   }
 }
 
-void setupOTA(const char *nameprefix, const char *ssid, const char *password)
+void setupOTA(const char *nameprefix)
 {
   // Configure the hostname
   uint16_t maxlen = strlen(nameprefix) + 7;
@@ -67,11 +68,6 @@ void setupOTA(const char *nameprefix, const char *ssid, const char *password)
   snprintf(fullhostname, maxlen, "%s-%02x%02x%02x", nameprefix, mac[3], mac[4], mac[5]);
   ArduinoOTA.setHostname(fullhostname);
   delete[] fullhostname;
-
-  // Configure and start the WiFi station
-  WiFi.mode(WIFI_STA);
-  WiFi.config(localIP, gateway, subnet);
-  WiFi.begin(ssid, password);
 
   ArduinoOTA.onStart([]()
                      {
@@ -203,7 +199,7 @@ void InitBMI270()
   ahrs_mahony_6dof.begin(AHRS_SAMPLING);
   ahrs_mahony_9dof.begin(AHRS_SAMPLING);
 
-  xTaskCreate(ahrs_task, "ahrs_task", 2048, NULL, 1, NULL);
+  xTaskCreatePinnedToCore(ahrs_task, "ahrs_task", 2048, NULL, 1, NULL, 0);
 
   Serial.println("BMI270 OK!");
 }
@@ -305,7 +301,7 @@ Description: Slave address is 0x05, change the baud rate to 0x01 (2400bps)
 
 unsigned char cmd[] = {0x01, 0x03, 0x01, 0x00, 0x00, 0x01, 0x85, 0xf6}; // 温度補正あり
 // unsigned char cmd[] = {0x01, 0x03, 0x01, 0x01, 0x00, 0x01, 0xd4, 0x36}; // 温度補正無し
-float altitude = 2.0; // 高度(m)
+float altitude = 10.0; // 高度(m)
 
 void altitude_task(void *pvParameters)
 {
@@ -320,7 +316,7 @@ void altitude_task(void *pvParameters)
     {
       uint8_t buff[16];
       int recvSize = ALTSerial.readBytes(buff, dataLen);
-      
+
       uint16_t dist = buff[3] << 8 | buff[4];
       altitude = dist / 1000.0f;
     }
@@ -336,7 +332,7 @@ void InitAltitude()
 {
   pinMode(ALT_REDE_PIN, OUTPUT);
   ALTSerial.begin(9600, SWSERIAL_8N1, ALT_RX, ALT_TX);
-  xTaskCreate(altitude_task, "altitude_task", 4096, NULL, 1, NULL);
+  xTaskCreatePinnedToCore(altitude_task, "altitude_task", 4096, NULL, 1, NULL, 0);
 }
 #pragma endregion
 
@@ -602,6 +598,63 @@ void InitSD()
 }
 #pragma endregion
 
+#pragma region JSON
+// JSONを作成する
+JsonDocument json_data, json_array;
+char json_string[4096];
+
+void CreateJson()
+{
+  // JSONに変換したいデータを連想配列で指定する
+  json_data["Latitude"] = gps_latitude;
+  json_data["Longitude"] = gps_longitude;
+  json_data["GPSAltitude"] = gps_altitude;
+  json_data["GPSCourse"] = gps_course;
+  json_data["GPSSpeed"] = gps_speed;
+  json_data["AccelX"] = accelX;
+  json_data["AccelY"] = accelY;
+  json_data["AccelZ"] = accelZ;
+  json_data["GyroX"] = gyroX;
+  json_data["GyroY"] = gyroY;
+  json_data["GyroZ"] = gyroZ;
+  json_data["MagX"] = magX;
+  json_data["MagY"] = magY;
+  json_data["MagZ"] = magZ;
+  json_data["Roll_Mad6"] = roll_mad6;
+  json_data["Pitch_Mad6"] = pitch_mad6;
+  json_data["Yaw_Mad6"] = yaw_mad6;
+  json_data["Roll_Mad9"] = roll_mad9;
+  json_data["Pitch_Mad9"] = pitch_mad9;
+  json_data["Yaw_Mad9"] = yaw_mad9;
+  json_data["Roll_Mah6"] = roll_mah6;
+  json_data["Pitch_Mah6"] = pitch_mah6;
+  json_data["Yaw_Mah6"] = yaw_mah6;
+  json_data["Roll_Mah9"] = roll_mah9;
+  json_data["Pitch_Mah9"] = pitch_mah9;
+  json_data["Yaw_Mah9"] = yaw_mah9;
+  json_data["Temperature"] = temperature;
+  json_data["Pressure"] = pressure;
+  json_data["GroundPressure"] = ground_pressure;
+  json_data["BMPAltitude"] = bmp_altitude;
+  json_data["Altitude"] = altitude;
+  json_data["AirSpeed"] = air_speed;
+  json_data["PropellerRotationSpeed"] = propeller_rotation;
+  json_data["Rudder"] = rudder_rotation;
+  json_data["Elevator"] = elevator_rotation;
+  json_data["Trim"] = trim;
+  json_data["LoRaRSSI"] = 0;
+  json_data["RunningTime"] = millis() / 1000.0;
+
+  char time_str[32];
+  sprintf(time_str, "%d-%d-%d %d:%02d:%02d", gps_year, gps_month, gps_day, gps_hour, gps_minute, gps_second);
+  json_array["Time"] = time_str;
+  json_array["data"] = json_data;
+
+  // JSONフォーマットの文字列に変換する
+  serializeJson(json_array, json_string, sizeof(json_string));
+}
+#pragma endregion
+
 #pragma region SERVER
 
 #pragma region LORA
@@ -715,7 +768,7 @@ void LoRaSendTask(void *pvParameters)
 
     lora_packet.CRC32 = (~crc32_le((uint32_t)~(0xffffffff), (const uint8_t *)&(lora_packet.data), sizeof(lora_packet.data))) ^ 0xffffffff;
 
-    LORA_SERIAL.write((byte *)&lora_packet, sizeof(lora_packet));
+    LoRaSerial.write((byte *)&lora_packet, sizeof(lora_packet));
 
     delay(100);
   }
@@ -723,7 +776,7 @@ void LoRaSendTask(void *pvParameters)
 
 void InitLoRa()
 {
-  LORA_SERIAL.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
+  LoRaSerial.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
   xTaskCreatePinnedToCore(LoRaSendTask, "LoRaSendTask", 8192, NULL, 1, NULL, 0);
 }
 #pragma endregion
@@ -789,59 +842,6 @@ void handleSetServoRotation()
 }
 void handleGetMeasurementData()
 {
-  // JSONを作成する
-  JsonDocument json_array, json_data;
-  char json_string[4096];
-
-  // JSONに変換したいデータを連想配列で指定する
-  json_data["Latitude"] = gps_latitude;
-  json_data["Longitude"] = gps_longitude;
-  json_data["GPSAltitude"] = gps_altitude;
-  json_data["GPSCourse"] = gps_course;
-  json_data["GPSSpeed"] = gps_speed;
-  json_data["AccelX"] = accelX;
-  json_data["AccelY"] = accelY;
-  json_data["AccelZ"] = accelZ;
-  json_data["GyroX"] = gyroX;
-  json_data["GyroY"] = gyroY;
-  json_data["GyroZ"] = gyroZ;
-  json_data["MagX"] = magX;
-  json_data["MagY"] = magY;
-  json_data["MagZ"] = magZ;
-  json_data["Roll_Mad6"] = roll_mad6;
-  json_data["Pitch_Mad6"] = pitch_mad6;
-  json_data["Yaw_Mad6"] = yaw_mad6;
-  json_data["Roll_Mad9"] = roll_mad9;
-  json_data["Pitch_Mad9"] = pitch_mad9;
-  json_data["Yaw_Mad9"] = yaw_mad9;
-  json_data["Roll_Mah6"] = roll_mah6;
-  json_data["Pitch_Mah6"] = pitch_mah6;
-  json_data["Yaw_Mah6"] = yaw_mah6;
-  json_data["Roll_Mah9"] = roll_mah9;
-  json_data["Pitch_Mah9"] = pitch_mah9;
-  json_data["Yaw_Mah9"] = yaw_mah9;
-  json_data["Temperature"] = temperature;
-  json_data["Pressure"] = pressure;
-  json_data["GroundPressure"] = ground_pressure;
-  json_data["BMPAltitude"] = bmp_altitude;
-  json_data["Altitude"] = altitude;
-  json_data["AirSpeed"] = air_speed;
-  json_data["PropellerRotationSpeed"] = propeller_rotation;
-  json_data["Rudder"] = rudder_rotation;
-  json_data["Elevator"] = elevator_rotation;
-  json_data["Trim"] = trim;
-  json_data["LoRaRSSI"] = 0;
-  json_data["RunningTime"] = millis() / 1000.0;
-
-  char time_str[32];
-  sprintf(time_str, "%d-%d-%d %d:%02d:%02d", gps_year, gps_month, gps_day, gps_hour, gps_minute, gps_second);
-  json_array["AID"] = AID;
-  json_array["Time"] = time_str;
-  json_array["data"] = json_data;
-
-  // JSONフォーマットの文字列に変換する
-  serializeJson(json_array, json_string, sizeof(json_string));
-
   unsigned char SHA256[32];
   sha256(json_string, SHA256);
   char SHA256_str[64 + 1];
@@ -856,7 +856,7 @@ void handleGetMeasurementData()
 
 void InitServer()
 {
-  setupOTA("FM5", SSID, PASSPHRASE);
+  setupOTA("FM5");
   server.on("/", handleRoot);
   server.on("/SetGroundPressure", handleSetGroundPressure);
   server.on("/GetGroundPressure", handleGetGroundPressure);
@@ -889,10 +889,69 @@ void GetControlData()
   {
     ControlData ctrl_data;
     CtrlSerial.readBytes((uint8_t *)&ctrl_data, sizeof(ControlData));
-    
+
     rudder_rotation = ctrl_data.Rudder;
     elevator_rotation = ctrl_data.Elevator;
     trim = ctrl_data.Trim;
+  }
+}
+#pragma endregion
+
+#pragma region AWS
+// The MQTT topics that this device should publish/subscribe
+#define AWS_IOT_PUBLISH_TOPIC "esp32/pub"
+
+WiFiClientSecure net = WiFiClientSecure();
+MQTTClient client = MQTTClient(256);
+
+void connectAWS()
+{
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+  }
+
+  // Configure WiFiClientSecure to use the AWS IoT device credentials
+  net.setCACert(AWS_CERT_CA);
+  net.setCertificate(AWS_CERT_CRT);
+  net.setPrivateKey(AWS_CERT_PRIVATE);
+
+  // Connect to the MQTT broker on the AWS endpoint we defined earlier
+  client.begin(AWS_IOT_ENDPOINT, 8883, net);
+
+  Serial.print("Connecting to AWS IOT");
+
+  while (!client.connect(THINGNAME))
+  {
+    Serial.print(".");
+    delay(100);
+  }
+
+  if (!client.connected())
+  {
+    Serial.println("AWS IoT Timeout!");
+    return;
+  }
+
+  Serial.println("AWS IoT Connected!");
+}
+
+void publishMessage()
+{
+  client.publish(AWS_IOT_PUBLISH_TOPIC, json_string);
+}
+
+void AWS_task(void *parameter)
+{
+  connectAWS();
+  while (1)
+  {
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      connectAWS();
+    }
+    publishMessage();
+    delay(100);
   }
 }
 #pragma endregion
@@ -904,6 +963,11 @@ void setup()
   auto cfg = M5.config();
   CoreS3.begin(cfg);
   CoreS3.Ex_I2C.begin();
+
+  // Configure and start the WiFi station
+  WiFi.mode(WIFI_STA);
+  WiFi.config(localIP, gateway, subnet, dns1, dns2);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   InitBMP280();
   delay(100);
@@ -926,6 +990,9 @@ void setup()
   delay(100);
   InitUARTToControl();
   delay(100);
+
+  // 最低でも8kBのスタックサイズが必要
+  xTaskCreatePinnedToCore(AWS_task, "AWS_task", 16384, NULL, 1, NULL, 1);
 }
 
 void loop()
@@ -943,6 +1010,7 @@ void loop()
   GetTacho();
   GetRPM();
   GetControlData();
+  CreateJson();
 
   // Display
   static uint32_t last_print = 0;
