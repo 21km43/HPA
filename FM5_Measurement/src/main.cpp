@@ -366,7 +366,7 @@ void GetTacho()
     if (tach_interrupts > 5)
     {
       tach_rotation = (uint32_t)((double)1000000000.0 * ((double)tach_interrupts / tach_delta_time));
-      air_speed = (tach_rotation * tach_rotation * -7.0 * pow(10, -16.0) + tach_rotation * 3.0 * pow(10, -7.0)) * 1.0;
+      air_speed = tach_rotation * tach_rotation * -7.0 * pow(10, -16.0) + tach_rotation * 3.0 * pow(10, -7.0);
     }
     else
     {
