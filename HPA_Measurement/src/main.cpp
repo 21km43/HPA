@@ -1021,19 +1021,17 @@ void loop()
     CoreS3.Display.setCursor(0, 0);
     CoreS3.Display.clear();
 
-    // CoreS3.Display.printf("Temperature: %.2f *C\r\n", temperature);
-    // CoreS3.Display.printf("Pressure: %.2f Pa\r\n", pressure);
+    CoreS3.Display.printf("Temperature: %.2f *C\r\n", temperature);
+    CoreS3.Display.printf("Pressure: %.2f Pa\r\n", pressure);
     CoreS3.Display.printf("Altitude: %.2f m\r\n", altitude);
-    // CoreS3.Display.printf("BMP Altitude: %.2f m\r\n", bmp_altitude);
     CoreS3.Display.printf("GPS Time: %d-%d-%d %d:%02d:%02d\r\n", gps_year, gps_month, gps_day, gps_hour, gps_minute, gps_second);
     CoreS3.Display.printf("Latitude: %.9f, Longitude: %.9f\r\n", gps_latitude, gps_longitude);
-    // CoreS3.Display.printf("GPS Altitude: %.2f m\r\n", gps_altitude);
-    // CoreS3.Display.printf("GPS Course: %.2f deg\r\n", gps_course);
-    // CoreS3.Display.printf("GPS Speed: %.2f m/s\r\n", gps_speed);
-    // CoreS3.Display.printf("ax: %.2f, ay: %.2f, az: %.2f\r\n", accelX, accelY, accelZ);
-    // CoreS3.Display.printf("gx: %.2f, gy: %.2f, gz: %.2f\r\n", gyroX, gyroY, gyroZ);
-    // CoreS3.Display.printf("mx: %d, my: %d, mz: %d\r\n", magX, magY, magZ);
-    CoreS3.Display.printf("Roll: %.2f, Pitch: %.2f, Yaw: %.2f\r\n", roll_mad9, pitch_mad9, yaw_mad9);
+    CoreS3.Display.printf("GPS Altitude: %.2f m\r\n", gps_altitude);
+    CoreS3.Display.printf("GPS Course: %.2f deg\r\n", gps_course);
+    CoreS3.Display.printf("GPS Speed: %.2f m/s\r\n", gps_speed);
+    CoreS3.Display.printf("ax: %.2f, ay: %.2f, az: %.2f\r\n", accelX, accelY, accelZ);
+    CoreS3.Display.printf("gx: %.2f, gy: %.2f, gz: %.2f\r\n", gyroX, gyroY, gyroZ);
+    CoreS3.Display.printf("mx: %d, my: %d, mz: %d\r\n", magX, magY, magZ);
     CoreS3.Display.printf("Air Speed: %.2f\r\n", air_speed);
     CoreS3.Display.printf("Propeller Rotation Speed: %d\r\n", propeller_rotation);
     CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %.2f\r\n", rudder_rotation, elevator_rotation, trim);
