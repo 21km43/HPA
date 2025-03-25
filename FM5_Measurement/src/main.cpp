@@ -46,7 +46,7 @@ constexpr int SD_SPI_CS_PIN = 4;
 
 float rudder_rotation = 0;
 float elevator_rotation = 0;
-int trim = 0;
+float trim = 0;
 
 #pragma region OTA
 void ota_handle(void *parameter)
