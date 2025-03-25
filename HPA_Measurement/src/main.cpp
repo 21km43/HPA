@@ -1035,6 +1035,6 @@ void loop()
     CoreS3.Display.printf("Air Speed: %.2f\r\n", air_speed);
     CoreS3.Display.printf("Propeller Rotation Speed: %d\r\n", propeller_rotation);
     CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %.2f\r\n", rudder_rotation, elevator_rotation, trim);
-    CoreS3.Display.printf("Wi-Fi Status: %s\r\n", WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected");
+    CoreS3.Display.printf("Wi-Fi Status: %s\r\n", WiFi.status() == WL_CONNECTED ? "Connected" : "Not Connected");
   }
 }
