@@ -22,8 +22,8 @@ byte responcedata[11] = {0};
 
 byte set_data_buff[11] = {0x00};
 #endif
-constexpr char SSID[] = "FM5_LoRa";
-constexpr char PASSPHRASE[] = "FM5_Password";
+constexpr char SSID[] = "HPA_LoRa";
+constexpr char PASSPHRASE[] = "HPA_Password";
 
 const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
 const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ

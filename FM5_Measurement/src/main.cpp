@@ -44,9 +44,9 @@ constexpr int SD_SPI_MISO_PIN = 35;
 constexpr int SD_SPI_MOSI_PIN = 37;
 constexpr int SD_SPI_CS_PIN = 4;
 
-float rudder_rotation = 0;
-float elevator_rotation = 0;
-float trim = 0;
+float rudder_rotation = 0.0f;
+float elevator_rotation = 0.0f;
+float trim = 0.0f;
 
 #pragma region OTA
 void ota_handle(void *parameter)
@@ -856,7 +856,7 @@ void handleGetMeasurementData()
 
 void InitServer()
 {
-  setupOTA("FM5");
+  setupOTA("HPA");
   server.on("/", handleRoot);
   server.on("/SetGroundPressure", handleSetGroundPressure);
   server.on("/GetGroundPressure", handleGetGroundPressure);
@@ -899,7 +899,7 @@ void GetControlData()
 
 #pragma region AWS
 // The MQTT topics that this device should publish/subscribe
-#define AWS_IOT_PUBLISH_TOPIC "esp32/pub"
+#define AWS_IOT_PUBLISH_TOPIC "hpa/pub"
 
 WiFiClientSecure net = WiFiClientSecure();
 MQTTClient client = MQTTClient(256);
@@ -1037,5 +1037,6 @@ void loop()
     CoreS3.Display.printf("Air Speed: %.2f\r\n", air_speed);
     CoreS3.Display.printf("Propeller Rotation Speed: %d\r\n", propeller_rotation);
     CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %.2f\r\n", rudder_rotation, elevator_rotation, trim);
+    CoreS3.Display.printf("Wi-Fi Status: %s\r\n", WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected");
   }
 }
