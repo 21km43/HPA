@@ -1,4 +1,4 @@
-# 計測系統
+# HPA計測系統
 
 ## Hardware
 
@@ -24,3 +24,8 @@
 * PPS ... G0 (Not used)
 * TX ... G6
 * RX ... G7
+
+### AWS参考情報
+
+- [マイコン ESP32 を使って AWS IoT Core と Pub/Sub 通信するまで](https://dev.classmethod.jp/articles/esp32-aws-iot-pubsub-basic)
+- [AWS IoT Coreで受け取ったデバイスデータをAmazon DynamoDBに保存してみた](https://dev.classmethod.jp/articles/saving-device-data-from-iot-core-to-dynamodb)
