@@ -1,4 +1,4 @@
-# F機復元PJ（LoRa受信）
+# LoRa受信プログラム
 
 ## Hardware
 
