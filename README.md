@@ -4,3 +4,7 @@
 
 - HPA_Measurement ... 機体計測システム
 - HPA_LoRa ... LoRa受信システム
+
+## 概略図
+
+![HPA.drawio](HPA.drawio.svg)
