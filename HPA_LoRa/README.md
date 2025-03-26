@@ -3,6 +3,12 @@
 ## Hardware
 
 * [ESP32-C3-WROOM-02](https://akizukidenshi.com/catalog/g/g117493/)
+* [E220-900T22S(JP)](https://dragon-torch.tech/rf-modules/lora/e220-900t22s-jp)
+
+## Software
+
+* [PlatformIO](https://platformio.org)
+* [VSCode](https://code.visualstudio.com)
 
 ## Config
 
