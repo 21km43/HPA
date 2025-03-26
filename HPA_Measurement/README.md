@@ -7,6 +7,11 @@
 * [M5Stack用GNSSモジュール 気圧/IMU/地磁気センサ付き（NEO-M9N/BMP280/BMI270/BMM150）](https://www.switch-science.com/products/9276?_pos=2&_sid=b1554245d&_ss=r)
 * microSD 16GB
 
+## Software
+
+* [PlatformIO](https://platformio.org)
+* [VSCode](https://code.visualstudio.com)
+
 ## Cloud Service
 
 * [AWS IoT Core](https://aws.amazon.com/jp/iot-core)
