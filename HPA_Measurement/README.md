@@ -102,6 +102,14 @@ FROM
   'hpa/pub'
 ```
 
+### DynamoDB上のテーブル作成と削除
+
+```bash
+aws dynamodb create-table --table-name HPA_Table --attribute-definitions AttributeName=ID,AttributeType=S AttributeName=TimeStamp,AttributeType=N --key-schema AttributeName=ID,KeyType=HASH AttributeName=TimeStamp,KeyType=RANGE --billing-mode PAY_PER_REQUEST --table-class STANDARD
+
+aws dynamodb delete-table --table-name HPA_Table
+```
+
 ### DynamoDBからのCSVダウンロード
 
 CloudShellで以下のコマンドを実行
@@ -112,12 +120,4 @@ aws dynamodb scan --table-name HPA_Table | jq -r '.Items[] | [.TimeStamp.N, .Tim
 sed -i '1itimestamp, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed, AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ, MagX, MagY, MagZ, Roll_Mad6, Pitch_Mad6, Yaw_Mad6, Roll_Mad9, Pitch_Mad9, Yaw_Mad9, Roll_Mah6, Pitch_Mah6, Yaw_Mah6, Roll_Mah9, Pitch_Mah9, Yaw_Mah9, Temperature, Pressure, GroundPressure, BMPAltitude, Altitude, AirSpeed, PropellerRotationSpeed, Rudder, Elevator, Trim, LoRaRSSI, RunningTime' out.csv
 
 sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
-```
-
-### テーブルの作成と削除
-
-```bash
-aws dynamodb create-table --table-name HPA_Table --attribute-definitions AttributeName=ID,AttributeType=S AttributeName=TimeStamp,AttributeType=N --key-schema AttributeName=ID,KeyType=HASH AttributeName=TimeStamp,KeyType=RANGE --billing-mode PAY_PER_REQUEST --table-class STANDARD
-
-aws dynamodb delete-table --table-name HPA_Table
 ```
