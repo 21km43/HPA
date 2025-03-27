@@ -13,11 +13,6 @@
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <pgmspace.h>
-
-#define SECRET
-#define THINGNAME "HPA"
-
 const char WIFI_SSID[] = "HPA_Measurement";
 const char WIFI_PASSWORD[] = "HPA_Password";
 const char AWS_IOT_ENDPOINT[] = "xxxxx.amazonaws.com";

@@ -898,6 +898,7 @@ void GetControlData()
 #pragma endregion
 
 #pragma region AWS
+#define THINGNAME "HPA"
 // The MQTT topics that this device should publish/subscribe
 #define AWS_IOT_PUBLISH_TOPIC "hpa/pub"
 
