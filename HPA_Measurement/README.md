@@ -113,3 +113,11 @@ sed -i '1itimestamp, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed
 
 sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```
+
+### テーブルの作成と削除
+
+```bash
+aws dynamodb create-table --table-name HPA_Table --attribute-definitions AttributeName=ID,AttributeType=S AttributeName=TimeStamp,AttributeType=N --key-schema AttributeName=ID,KeyType=HASH AttributeName=TimeStamp,KeyType=RANGE --billing-mode PAY_PER_REQUEST --table-class STANDARD
+
+aws dynamodb delete-table --table-name HPA_Table
+```
