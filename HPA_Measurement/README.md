@@ -54,7 +54,7 @@
 ```sql
 SELECT
   topic(1) AS id,
-  timestamp() AS timestamp,
+  timestamp() AS TimeStamp,
   Time AS Time,
   data.Latitude AS Latitude,
   data.Longitude AS Longitude,
