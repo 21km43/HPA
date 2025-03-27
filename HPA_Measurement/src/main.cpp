@@ -919,7 +919,7 @@ void connectAWS()
   // Connect to the MQTT broker on the AWS endpoint we defined earlier
   client.begin(AWS_IOT_ENDPOINT, 8883, net);
 
-  Serial.print("Connecting to AWS IOT");
+  Serial.println("Connecting to AWS IoT...");
 
   while (!client.connect(THINGNAME))
   {
@@ -946,8 +946,9 @@ void AWS_task(void *parameter)
   connectAWS();
   while (1)
   {
-    if (WiFi.status() != WL_CONNECTED)
+    if (!client.loop())
     {
+      Serial.println("AWS IoT Disconnected!");
       connectAWS();
     }
     publishMessage();
