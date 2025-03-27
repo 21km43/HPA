@@ -907,6 +907,7 @@ MQTTClient client = MQTTClient(256);
 
 void connectAWS()
 {
+  WiFi.reconnect();
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
