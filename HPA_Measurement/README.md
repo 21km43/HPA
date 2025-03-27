@@ -19,6 +19,10 @@
 
 * [E220-900T22S(JP)](https://dragon-torch.tech/rf-modules/lora/e220-900t22s-jp)
 
+### Others
+
+* [RS485 driver unit](https://github.com/21km43/UART-RS485)
+
 ## Software
 
 * [PlatformIO](https://platformio.org)
