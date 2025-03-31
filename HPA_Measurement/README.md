@@ -46,10 +46,21 @@
 * TX ... G6
 * RX ... G7
 
-## AWS参考情報
+## ログ保存方法
+
+本システムではログの保存について以下の2つをサポートしている
+
+- microSDへの保存
+- MQTTによる外部サーバーへのアップロード
+
+MQTTでは、モノの名前を`HPA`、Publish時のトピック名を`hpa/pub`としている。以下、MQTTブローカーをAWSに構築した場合の情報を掲載する。
+
+### 参考情報
 
 - [マイコン ESP32 を使って AWS IoT Core と Pub/Sub 通信するまで](https://dev.classmethod.jp/articles/esp32-aws-iot-pubsub-basic)
 - [AWS IoT Coreで受け取ったデバイスデータをAmazon DynamoDBに保存してみた](https://dev.classmethod.jp/articles/saving-device-data-from-iot-core-to-dynamodb)
+
+なお、ポリシーについては`iot:Connect`と`iot:Publish`のみ許可すれば良い。
 
 ### SQLステートメント
 
