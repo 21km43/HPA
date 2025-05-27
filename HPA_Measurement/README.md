@@ -32,6 +32,7 @@
 ## Cloud Service
 
 * [AWS IoT Core](https://aws.amazon.com/jp/iot-core)
+* [直近のJSONデータ取得用URL](https://62u95gbc60.execute-api.us-east-1.amazonaws.com/test/items/hpa/latest)
 
 ## CoreS3 SE Pinout
 
