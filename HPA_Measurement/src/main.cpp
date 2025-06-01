@@ -27,16 +27,20 @@ SoftwareSerial CtrlSerial;
 #define LoRaSerial Serial1
 #define GPSSerial Serial2
 
+#define DISABLE_CTRL_SERIAL
+
 const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
 const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ
 const IPAddress subnet(255, 255, 255, 0);  // サブネットマスク
 const IPAddress dns1(8, 8, 8, 8);          // 優先DNS
 const IPAddress dns2(8, 8, 4, 4);          // 代替DNS
 
-constexpr int GPS_RX = 7, GPS_TX = 6;
+constexpr int GPS_RX = 13, GPS_TX = 5;
 constexpr int ALT_RX = 8, ALT_TX = 9, ALT_REDE_PIN = 10;
 constexpr int LORA_RX = 18, LORA_TX = 17;
+#ifndef DISABLE_CTRL_SERIAL
 constexpr int CTRL_RX = 13, CTRL_TX = 5;
+#endif
 constexpr int RPM_PIN = 14;
 constexpr int TACHO_PIN[2] = {1, 2};
 constexpr int SD_SPI_SCK_PIN = 36;
@@ -228,7 +232,7 @@ double gps_speed = 0;     // 対地速度(m/s) 精度は高くないので参考
 
 void InitGPS()
 {
-  GPSSerial.begin(38400, SERIAL_8N1, GPS_RX, GPS_TX);
+  GPSSerial.begin(115200, SERIAL_8N1, GPS_RX, GPS_TX);
 }
 void GetGPS()
 {
@@ -867,6 +871,7 @@ void InitServer()
 }
 #pragma endregion
 
+#ifndef DISABLE_CTRL_SERIAL
 #pragma region UART_TO_CONTROL
 // 操舵系統からのUART通信
 struct ControlData
@@ -896,6 +901,7 @@ void GetControlData()
   }
 }
 #pragma endregion
+#endif
 
 #pragma region AWS
 #define THINGNAME "HPA"
@@ -991,7 +997,9 @@ void setup()
   delay(100);
   InitLoRa();
   delay(100);
+#ifndef DISABLE_CTRL_SERIAL
   InitUARTToControl();
+#endif
   delay(100);
 
   // 最低でも8kBのスタックサイズが必要
@@ -1012,7 +1020,9 @@ void loop()
   GetAltitude();
   GetTacho();
   GetRPM();
+#ifndef DISABLE_CTRL_SERIAL
   GetControlData();
+#endif
   CreateJson();
 
   // Display
