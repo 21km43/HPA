@@ -146,3 +146,5 @@ sed -i '1iTimestamp, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed
 
 sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```
+
+- [ExcelでTimeStampを日本時間（JST）に置き換える方法](https://qiita.com/ajitama/items/c0b65ac7489f84c3b394)
