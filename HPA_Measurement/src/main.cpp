@@ -238,7 +238,9 @@ void GetGPS()
 {
   while (GPSSerial.available() > 0)
   {
-    gps.encode(GPSSerial.read());
+    const char c = GPSSerial.read();
+    gps.encode(c);
+    // Serial.write(c);
 
     if (gps.date.isUpdated())
     {
