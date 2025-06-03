@@ -22,25 +22,26 @@
 #include <MQTTClient.h>
 #include "secrets.h"
 
-SoftwareSerial ALTSerial;
-SoftwareSerial CtrlSerial;
-#define LoRaSerial Serial1
-#define GPSSerial Serial2
-
-#define DISABLE_CTRL_SERIAL
-
 const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
 const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ
-const IPAddress subnet(255, 255, 255, 0);  // サブネットマスク
-const IPAddress dns1(8, 8, 8, 8);          // 優先DNS
-const IPAddress dns2(8, 8, 4, 4);          // 代替DNS
+const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
+const IPAddress dns1(8, 8, 8, 8);           // 優先DNS
+const IPAddress dns2(8, 8, 4, 4);           // 代替DNS
 
+constexpr int USB_BAUDRATE = 115200;
+
+#define GPSSerial Serial2
+constexpr int GPS_SERIAL_BAUDRATE = 115200;
 constexpr int GPS_RX = 13, GPS_TX = 5;
+
+SoftwareSerial ALTSerial;
+constexpr int ALT_SERIAL_BAUDRATE = 9600;
 constexpr int ALT_RX = 8, ALT_TX = 9, ALT_REDE_PIN = 10;
+
+#define LoRaSerial Serial1
+constexpr int LORA_SERIAL_BAUDRATE = 9600;
 constexpr int LORA_RX = 18, LORA_TX = 17;
-#ifndef DISABLE_CTRL_SERIAL
-constexpr int CTRL_RX = 13, CTRL_TX = 5;
-#endif
+
 constexpr int RPM_PIN = 14;
 constexpr int TACHO_PIN[2] = {1, 2};
 constexpr int SD_SPI_SCK_PIN = 36;
@@ -232,7 +233,7 @@ double gps_speed = 0;     // 対地速度(m/s) 精度は高くないので参考
 
 void InitGPS()
 {
-  GPSSerial.begin(115200, SERIAL_8N1, GPS_RX, GPS_TX);
+  GPSSerial.begin(GPS_SERIAL_BAUDRATE, SERIAL_8N1, GPS_RX, GPS_TX);
 }
 void GetGPS()
 {
@@ -337,7 +338,7 @@ void GetAltitude()
 void InitAltitude()
 {
   pinMode(ALT_REDE_PIN, OUTPUT);
-  ALTSerial.begin(9600, SWSERIAL_8N1, ALT_RX, ALT_TX);
+  ALTSerial.begin(ALT_SERIAL_BAUDRATE, SWSERIAL_8N1, ALT_RX, ALT_TX);
   xTaskCreatePinnedToCore(altitude_task, "altitude_task", 4096, NULL, 1, NULL, 0);
 }
 #pragma endregion
@@ -782,7 +783,7 @@ void LoRaSendTask(void *pvParameters)
 
 void InitLoRa()
 {
-  LoRaSerial.begin(9600, SERIAL_8N1, LORA_RX, LORA_TX);
+  LoRaSerial.begin(LORA_SERIAL_BAUDRATE, SERIAL_8N1, LORA_RX, LORA_TX);
   xTaskCreatePinnedToCore(LoRaSendTask, "LoRaSendTask", 8192, NULL, 1, NULL, 0);
 }
 #pragma endregion
@@ -873,38 +874,6 @@ void InitServer()
 }
 #pragma endregion
 
-#ifndef DISABLE_CTRL_SERIAL
-#pragma region UART_TO_CONTROL
-// 操舵系統からのUART通信
-struct ControlData
-{
-  float Rudder;
-  float Elevator;
-  float Trim;
-};
-
-constexpr char CTRL_TAG[2] = {'C', 'T'};
-
-void InitUARTToControl()
-{
-  CtrlSerial.begin(9600, SWSERIAL_8N1, CTRL_RX, CTRL_TX);
-}
-
-void GetControlData()
-{
-  while (CtrlSerial.available() >= (sizeof(ControlData) + sizeof(CTRL_TAG)) && CtrlSerial.read() == CTRL_TAG[0] && CtrlSerial.read() == CTRL_TAG[1])
-  {
-    ControlData ctrl_data;
-    CtrlSerial.readBytes((uint8_t *)&ctrl_data, sizeof(ControlData));
-
-    rudder_rotation = ctrl_data.Rudder;
-    elevator_rotation = ctrl_data.Elevator;
-    trim = ctrl_data.Trim;
-  }
-}
-#pragma endregion
-#endif
-
 #pragma region AWS
 #define THINGNAME "HPA"
 // The MQTT topics that this device should publish/subscribe
@@ -969,7 +938,7 @@ void AWS_task(void *parameter)
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(USB_BAUDRATE);
 
   auto cfg = M5.config();
   CoreS3.begin(cfg);
@@ -999,10 +968,6 @@ void setup()
   delay(100);
   InitLoRa();
   delay(100);
-#ifndef DISABLE_CTRL_SERIAL
-  InitUARTToControl();
-#endif
-  delay(100);
 
   // 最低でも8kBのスタックサイズが必要
   xTaskCreatePinnedToCore(AWS_task, "AWS_task", 16384, NULL, 1, NULL, 1);
@@ -1022,9 +987,6 @@ void loop()
   GetAltitude();
   GetTacho();
   GetRPM();
-#ifndef DISABLE_CTRL_SERIAL
-  GetControlData();
-#endif
   CreateJson();
 
   // Display

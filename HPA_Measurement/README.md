@@ -1,13 +1,17 @@
 # HPA計測系統
 
+## TODO
+- M5Stack CoreS3 SE用のプログラムになっているので今年の利用が終了次第、以下の変更を加える
+  - 6軸+3軸センサの設定変更（Ex_I2C -> In_I2C, I2C_NUM_1 -> I2C_NUM_0）
+  - 気圧計・温度計削除（高度計から温度の取得が可能、AWS側のルールも変更）
+
 ## Hardware
 
 ### M5Stack CoreS3 & Boards
 
-* [M5Stack CoreS3 SE](https://www.switch-science.com/products/9690)
+* [M5Stack CoreS3](https://www.switch-science.com/products/8960)
 * [M5Stack Core2用ポート拡張モジュール](https://www.switch-science.com/products/8308)
-* [M5Stack用GNSSモジュール 気圧/IMU/地磁気センサ付き（NEO-M9N/BMP280/BMI270/BMM150）](https://www.switch-science.com/products/9276?_pos=2&_sid=b1554245d&_ss=r)
-* [M5Stack custom bottom](https://github.com/xoseperez/m5stack-rfm95/blob/master/enclosure/m5stack-rfm95-bottom-v2.stl)
+* [M5Stack用GPSユニット v1.1](https://www.switch-science.com/products/10037)
 * microSD (up to 16GB)
 
 ### Sensors
@@ -40,7 +44,7 @@
 * Port B ... G8, G9 (Altitude)
 * Port C ... G18, G17 (LoRa)
 * Port D ... G14, G10 (G14 = Toggle RS485 inout for altitude sensor, G10 = Propeller Rotation Speed)
-* Port E ... G13, G5 (Control board)
+* Port E ... G13, G5 (GPS)
 
 ## GNSS
 
