@@ -5,6 +5,8 @@
 - [HPA_Measurement](/HPA_Measurement) ... 機体計測システム
 - [HPA_LoRa](/HPA_LoRa) ... LoRa受信システム
 
+詳細は各フォルダのREADMEを参照
+
 ## Notice
 
 `secrets.h`にWi-Fiのパラメータ、AWSの秘密鍵等を設定する。以下のコマンドでGitの追跡対象から除外する。
