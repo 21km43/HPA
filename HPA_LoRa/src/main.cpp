@@ -25,8 +25,8 @@ byte set_data_buff[11] = {0x00};
 constexpr char SSID[] = "HPA_LoRa";
 constexpr char PASSPHRASE[] = "HPA_Password";
 
-const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
-const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ
+const IPAddress localIP(192, 168, 200, 140); // 自身のIPアドレス
+const IPAddress gateway(192, 168, 200, 157); // デフォルトゲートウェイ
 const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
 
 #pragma region SERVER

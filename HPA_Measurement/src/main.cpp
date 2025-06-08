@@ -10,6 +10,7 @@
 #include <MahonyAHRS.h>
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
+#include <WiFiUDP.h>
 #include <ArduinoOTA.h>
 #include <WebServer.h>
 #include <HTTPClient.h>
@@ -22,11 +23,21 @@
 #include <MQTTClient.h>
 #include "secrets.h"
 
-const IPAddress localIP(192, 168, 43, 140); // 自身のIPアドレス
-const IPAddress gateway(192, 168, 43, 1);   // デフォルトゲートウェイ
-const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
-const IPAddress dns1(8, 8, 8, 8);           // 優先DNS
-const IPAddress dns2(8, 8, 4, 4);           // 代替DNS
+const IPAddress localIP(192, 168, 200, 140); // 自身のIPアドレス
+const IPAddress gateway(192, 168, 200, 157); // デフォルトゲートウェイ
+const IPAddress subnet(255, 255, 255, 0);    // サブネットマスク
+const IPAddress dns1(8, 8, 8, 8);            // 優先DNS
+const IPAddress dns2(8, 8, 4, 4);            // 代替DNS
+
+struct ControlData
+{
+  float rudder;     // 操舵角
+  float elevator;   // エレベータ角
+  float trim;       // トリム角
+};
+
+const int udpPort = 15646; // UDPポート番号
+WiFiUDP wifiUdp;           // 操舵 -> 計測の通信
 
 constexpr int USB_BAUDRATE = 115200;
 
@@ -52,6 +63,8 @@ constexpr int SD_SPI_CS_PIN = 4;
 float rudder_rotation = 0.0f;
 float elevator_rotation = 0.0f;
 float trim = 0.0f;
+
+int watchdog_count;
 
 #pragma region OTA
 void ota_handle(void *parameter)
@@ -824,29 +837,6 @@ void handleGetGroundPressure()
 {
   server.send(HTTP_CODE_OK, "text/plain", String(ground_pressure));
 }
-void handleSetServoRotation()
-{
-  // 操舵系統から値を受信する。サーボが動くわけではないので注意
-  if (server.hasArg("Rudder"))
-  {
-    rudder_rotation = server.arg("Rudder").toFloat();
-  }
-  if (server.hasArg("Elevator"))
-  {
-    elevator_rotation = server.arg("Elevator").toFloat();
-  }
-  if (server.hasArg("Trim"))
-  {
-    trim = server.arg("Trim").toFloat();
-  }
-  String str;
-  str += rudder_rotation;
-  str += ", ";
-  str += elevator_rotation;
-  str += ", ";
-  str += trim;
-  server.send(HTTP_CODE_OK, "text/plain", str);
-}
 void handleGetMeasurementData()
 {
   unsigned char SHA256[32];
@@ -867,7 +857,6 @@ void InitServer()
   server.on("/", handleRoot);
   server.on("/SetGroundPressure", handleSetGroundPressure);
   server.on("/GetGroundPressure", handleGetGroundPressure);
-  server.on("/SetServoRotation", handleSetServoRotation);
   server.on("/GetMeasurementData", handleGetMeasurementData);
   server.onNotFound(handleNotFound);
   server.begin();
@@ -936,6 +925,20 @@ void AWS_task(void *parameter)
 }
 #pragma endregion
 
+void watchdog_task(void *pvParameters)
+{
+  while (1)
+  {
+    if (watchdog_count > 5)
+    {
+      Serial.println("Watchdog triggered! Restarting...");
+      ESP.restart();
+    }
+    watchdog_count++;
+    delay(1000);
+  }
+}
+
 void setup()
 {
   Serial.begin(USB_BAUDRATE);
@@ -948,6 +951,8 @@ void setup()
   WiFi.mode(WIFI_STA);
   WiFi.config(localIP, gateway, subnet, dns1, dns2);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  wifiUdp.begin(udpPort);
 
   InitBMP280();
   delay(100);
@@ -971,6 +976,10 @@ void setup()
 
   // 最低でも8kBのスタックサイズが必要
   xTaskCreatePinnedToCore(AWS_task, "AWS_task", 16384, NULL, 1, NULL, 1);
+
+  // 5秒以上データが更新されない場合にESP32をリセットする
+  watchdog_count = 0;
+  xTaskCreatePinnedToCore(watchdog_task, "watchdog_task", 2048, NULL, 1, NULL, 1);
 }
 
 void loop()
@@ -981,6 +990,16 @@ void loop()
   {
     server.handleClient();
   }
+  if (wifiUdp.parsePacket() == sizeof(ControlData))
+  {
+    ControlData controlData;
+    wifiUdp.read((char*)(&controlData), sizeof(ControlData));
+
+    rudder_rotation = controlData.rudder;
+    elevator_rotation = controlData.elevator;
+    trim = controlData.trim;
+  }
+
   GetBMP280();
   GetBMI270();
   GetGPS();
@@ -1014,4 +1033,6 @@ void loop()
     CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %.2f\r\n", rudder_rotation, elevator_rotation, trim);
     CoreS3.Display.printf("Wi-Fi Status: %s\r\n", WiFi.status() == WL_CONNECTED ? "Connected" : "Not Connected");
   }
+
+  watchdog_count = 0;
 }
