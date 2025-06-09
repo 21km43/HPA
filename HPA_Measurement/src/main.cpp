@@ -1027,8 +1027,8 @@ void loop()
     CoreS3.Display.printf("Temperature: %.2f *C\r\n", temperature);
     CoreS3.Display.printf("Pressure: %.2f Pa\r\n", pressure);
     CoreS3.Display.printf("Altitude: %.2f m\r\n", altitude);
-    CoreS3.Display.printf("GPS Date: %04d-%02d-%02d\r\n", gps_year, gps_month, gps_day);
-    CoreS3.Display.printf("GPS Time: %02d:%02d:%02d.%02d\r\n", gps_hour, gps_minute, gps_second, gps_centisecond);
+    CoreS3.Display.printf("GPS Date (UTC): %04d-%02d-%02d\r\n", gps_year, gps_month, gps_day);
+    CoreS3.Display.printf("GPS Time (UTC): %02d:%02d:%02d.%02d\r\n", gps_hour, gps_minute, gps_second, gps_centisecond);
     CoreS3.Display.printf("Latitude: %.9f, Longitude: %.9f\r\n", gps_latitude, gps_longitude);
     CoreS3.Display.printf("GPS Altitude: %.2f m\r\n", gps_altitude);
     CoreS3.Display.printf("GPS Course: %.2f deg\r\n", gps_course);
