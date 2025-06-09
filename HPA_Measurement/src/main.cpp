@@ -32,9 +32,9 @@ const IPAddress dns2(8, 8, 4, 4);            // 代替DNS
 
 struct ControlData
 {
-  float rudder;     // 操舵角
-  float elevator;   // エレベータ角
-  float trim;       // トリム角
+  float rudder;   // 操舵角
+  float elevator; // エレベータ角
+  float trim;     // トリム角
 };
 
 const int udpPort = 15646; // UDPポート番号
@@ -233,18 +233,18 @@ void GetBMI270()
 #pragma region GPS
 // GPSの測定
 TinyGPSPlus gps;
-double gps_latitude = 0;  // 緯度（小数第9位まで）
-double gps_longitude = 0; // 経度（小数第9位まで）
-uint16_t gps_year = 0;    // 西暦
-uint8_t gps_month = 0;    // 月
-uint8_t gps_day = 0;      // 日
-uint8_t gps_hour = 0;     // 時
-uint8_t gps_minute = 0;   // 分
-uint8_t gps_second = 0;   // 秒
+double gps_latitude = 0;     // 緯度（小数第9位まで）
+double gps_longitude = 0;    // 経度（小数第9位まで）
+uint16_t gps_year = 0;       // 西暦
+uint8_t gps_month = 0;       // 月
+uint8_t gps_day = 0;         // 日
+uint8_t gps_hour = 0;        // 時
+uint8_t gps_minute = 0;      // 分
+uint8_t gps_second = 0;      // 秒
 uint8_t gps_centisecond = 0; // センチ秒
-double gps_altitude = 0;  // 高度 メートル単位
-double gps_course = 0;    // 進行方向(deg)
-double gps_speed = 0;     // 対地速度(m/s) 精度は高くないので参考程度に
+double gps_altitude = 0;     // 高度 メートル単位
+double gps_course = 0;       // 進行方向(deg)
+double gps_speed = 0;        // 対地速度(m/s) 精度は高くないので参考程度に
 
 void InitGPS()
 {
@@ -258,19 +258,28 @@ void GetGPS()
     gps.encode(c);
     // Serial.write(c);
 
-    if (gps.date.isUpdated())
+    if (gps.date.isUpdated() || gps.time.isUpdated())
     {
-      gps_year = gps.date.year();
-      gps_month = gps.date.month();
-      gps_day = gps.date.day();
-    }
-    if (gps.time.isUpdated())
-    {
-      gps_hour = gps.time.hour();
-      gps_minute = gps.time.minute();
-      gps_second = gps.time.second();
+      struct tm t_utc, *t_jst;
+      t_utc.tm_year = gps.date.year() - 1900;
+      t_utc.tm_mon = gps.date.month() - 1;
+      t_utc.tm_mday = gps.date.day();
+      t_utc.tm_hour = gps.time.hour();
+      t_utc.tm_min = gps.time.minute();
+      t_utc.tm_sec = gps.time.second();
+      t_utc.tm_isdst = 0;
+      time_t unixtime = mktime(&t_utc) + 60 * 60 * 9; // JST
+      t_jst = localtime(&unixtime);
+      gps_year = t_jst->tm_year + 1900;
+      gps_month = t_jst->tm_mon + 1;
+      gps_day = t_jst->tm_mday;
+      gps_hour = t_jst->tm_hour;
+      gps_minute = t_jst->tm_min;
+      gps_second = t_jst->tm_sec;
+
       gps_centisecond = gps.time.centisecond();
     }
+
     if (gps.location.isUpdated())
     {
       gps_latitude = gps.location.lat();
@@ -1000,7 +1009,7 @@ void loop()
   if (wifiUdp.parsePacket() == sizeof(ControlData))
   {
     ControlData controlData;
-    wifiUdp.read((char*)(&controlData), sizeof(ControlData));
+    wifiUdp.read((char *)(&controlData), sizeof(ControlData));
 
     rudder_rotation = controlData.rudder;
     elevator_rotation = controlData.elevator;
@@ -1027,8 +1036,8 @@ void loop()
     CoreS3.Display.printf("Temperature: %.2f *C\r\n", temperature);
     CoreS3.Display.printf("Pressure: %.2f Pa\r\n", pressure);
     CoreS3.Display.printf("Altitude: %.2f m\r\n", altitude);
-    CoreS3.Display.printf("GPS Date (UTC): %04d-%02d-%02d\r\n", gps_year, gps_month, gps_day);
-    CoreS3.Display.printf("GPS Time (UTC): %02d:%02d:%02d.%02d\r\n", gps_hour, gps_minute, gps_second, gps_centisecond);
+    CoreS3.Display.printf("GPS Date (JST): %04d-%02d-%02d\r\n", gps_year, gps_month, gps_day);
+    CoreS3.Display.printf("GPS Time (JST): %02d:%02d:%02d.%02d\r\n", gps_hour, gps_minute, gps_second, gps_centisecond);
     CoreS3.Display.printf("Latitude: %.9f, Longitude: %.9f\r\n", gps_latitude, gps_longitude);
     CoreS3.Display.printf("GPS Altitude: %.2f m\r\n", gps_altitude);
     CoreS3.Display.printf("GPS Course: %.2f deg\r\n", gps_course);
