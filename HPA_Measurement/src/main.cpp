@@ -240,6 +240,7 @@ uint8_t gps_day = 0;      // 日
 uint8_t gps_hour = 0;     // 時
 uint8_t gps_minute = 0;   // 分
 uint8_t gps_second = 0;   // 秒
+uint8_t gps_centisecond = 0; // センチ秒
 double gps_altitude = 0;  // 高度 メートル単位
 double gps_course = 0;    // 進行方向(deg)
 double gps_speed = 0;     // 対地速度(m/s) 精度は高くないので参考程度に
@@ -264,9 +265,10 @@ void GetGPS()
     }
     if (gps.time.isUpdated())
     {
-      gps_hour = (gps.time.hour() + 9) % 24; // 時差を考慮すること
+      gps_hour = (gps.time.hour() + 9) % 24; // UTCをJSTに変換
       gps_minute = gps.time.minute();
       gps_second = gps.time.second();
+      gps_centisecond = gps.time.centisecond();
     }
     if (gps.location.isUpdated())
     {
@@ -518,9 +520,9 @@ void SDWriteTask(void *pvParameters)
 
   while (fp)
   {
-    fp.printf("%d/%d/%d", gps_year, gps_month, gps_day);
+    fp.printf("%04d-%02d-%02d", gps_year, gps_month, gps_day);
     PRINT_COMMA;
-    fp.printf("%d:%02d:%02d", gps_hour, gps_minute, gps_second);
+    fp.printf("%02d:%02d:%02d.%02d", gps_hour, gps_minute, gps_second, gps_centisecond);
     PRINT_COMMA;
     fp.printf("%.9f", gps_latitude);
     PRINT_COMMA;
@@ -626,6 +628,11 @@ char json_string[4096];
 void CreateJson()
 {
   // JSONに変換したいデータを連想配列で指定する
+  char date_str[32], time_str[32];
+  sprintf(date_str, "%04d-%02d-%02d", gps_year, gps_month, gps_day);
+  sprintf(time_str, "%02d:%02d:%02d.%02d", gps_hour, gps_minute, gps_second, gps_centisecond);
+  json_data["Date"] = date_str;
+  json_data["Time"] = time_str;
   json_data["Latitude"] = gps_latitude;
   json_data["Longitude"] = gps_longitude;
   json_data["GPSAltitude"] = gps_altitude;
@@ -665,9 +672,6 @@ void CreateJson()
   json_data["LoRaRSSI"] = 0;
   json_data["RunningTime"] = millis() / 1000.0;
 
-  char time_str[32];
-  sprintf(time_str, "%d-%d-%d %d:%02d:%02d", gps_year, gps_month, gps_day, gps_hour, gps_minute, gps_second);
-  json_array["Time"] = time_str;
   json_array["data"] = json_data;
 
   // JSONフォーマットの文字列に変換する
@@ -687,6 +691,7 @@ struct LoRaData
   int8_t GPSHour;
   int8_t GPSMinute;
   int8_t GPSSecond;
+  int8_t GPSCentiSecond;
   double Latitude;
   double Longitude;
   double GPSAltitude;
@@ -748,6 +753,7 @@ void LoRaSendTask(void *pvParameters)
     lora_packet.data.GPSHour = gps_hour;
     lora_packet.data.GPSMinute = gps_minute;
     lora_packet.data.GPSSecond = gps_second;
+    lora_packet.data.GPSCentiSecond = gps_centisecond;
     lora_packet.data.Latitude = gps_latitude;
     lora_packet.data.Longitude = gps_longitude;
     lora_packet.data.GPSAltitude = gps_altitude;
@@ -1020,7 +1026,8 @@ void loop()
     CoreS3.Display.printf("Temperature: %.2f *C\r\n", temperature);
     CoreS3.Display.printf("Pressure: %.2f Pa\r\n", pressure);
     CoreS3.Display.printf("Altitude: %.2f m\r\n", altitude);
-    CoreS3.Display.printf("GPS Time: %d-%d-%d %d:%02d:%02d\r\n", gps_year, gps_month, gps_day, gps_hour, gps_minute, gps_second);
+    CoreS3.Display.printf("GPS Date: %04d-%02d-%02d\r\n", gps_year, gps_month, gps_day);
+    CoreS3.Display.printf("GPS Time: %02d:%02d:%02d.%02d\r\n", gps_hour, gps_minute, gps_second, gps_centisecond);
     CoreS3.Display.printf("Latitude: %.9f, Longitude: %.9f\r\n", gps_latitude, gps_longitude);
     CoreS3.Display.printf("GPS Altitude: %.2f m\r\n", gps_altitude);
     CoreS3.Display.printf("GPS Course: %.2f deg\r\n", gps_course);

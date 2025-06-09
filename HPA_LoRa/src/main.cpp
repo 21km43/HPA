@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <esp32/rom/crc.h>
+#include <esp32c3/rom/crc.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <HTTPClient.h>
@@ -27,7 +27,7 @@ constexpr char PASSPHRASE[] = "HPA_Password";
 
 const IPAddress localIP(192, 168, 200, 140); // 自身のIPアドレス
 const IPAddress gateway(192, 168, 200, 157); // デフォルトゲートウェイ
-const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
+const IPAddress subnet(255, 255, 255, 0);    // サブネットマスク
 
 #pragma region SERVER
 
@@ -41,6 +41,7 @@ struct LoRaData
   int8_t GPSHour;
   int8_t GPSMinute;
   int8_t GPSSecond;
+  int8_t GPSCentiSecond;
   double Latitude;
   double Longitude;
   double GPSAltitude;
@@ -124,7 +125,7 @@ void LoRaRecvTask(void *pvParameters)
       if (lora_packet_buff.size() == sizeof(LoRaPacket))
       {
         uint32_t crc32 = (~crc32_le((uint32_t)~(0xffffffff), lora_packet_buff.data(), sizeof(LoRaData))) ^ 0xffffffff;
-        if ((*(uint32_t*)(lora_packet_buff.data() + sizeof(LoRaData))) == crc32)
+        if ((*(uint32_t *)(lora_packet_buff.data() + sizeof(LoRaData))) == crc32)
         {
           memcpy(&lora_packet, lora_packet_buff.data(), sizeof(LoRaPacket));
           lora_packet_buff.clear();
@@ -136,7 +137,7 @@ void LoRaRecvTask(void *pvParameters)
         else
         {
           lora_packet_buff.erase(lora_packet_buff.begin());
-        } 
+        }
       }
     }
 
@@ -145,6 +146,11 @@ void LoRaRecvTask(void *pvParameters)
       lora_received = false;
 
       // JSONに変換したいデータを連想配列で指定する
+      char date_str[32], time_str[32];
+      sprintf(date_str, "%04d-%02d-%02d", lora_packet.data.GPSYear, lora_packet.data.GPSMonth, lora_packet.data.GPSDay);
+      sprintf(time_str, "%02d:%02d:%02d.%02d", lora_packet.data.GPSHour, lora_packet.data.GPSMinute, lora_packet.data.GPSSecond, lora_packet.data.GPSCentiSecond);
+      json_data["Date"] = date_str;
+      json_data["Time"] = time_str;
       json_data["Latitude"] = lora_packet.data.Latitude;
       json_data["Longitude"] = lora_packet.data.Longitude;
       json_data["GPSAltitude"] = lora_packet.data.GPSAltitude;
@@ -184,9 +190,6 @@ void LoRaRecvTask(void *pvParameters)
       json_data["LoRaRSSI"] = lora_rssi;
       json_data["RunningTime"] = lora_packet.data.RunningTime;
 
-      char time_str[32];
-      sprintf(time_str, "%d-%d-%d %d:%02d:%02d", lora_packet.data.GPSYear, lora_packet.data.GPSMonth, lora_packet.data.GPSDay, lora_packet.data.GPSHour, lora_packet.data.GPSMinute, lora_packet.data.GPSSecond);
-      json_array["Time"] = time_str;
       json_array["data"] = json_data;
 
       // JSONフォーマットの文字列に変換する
