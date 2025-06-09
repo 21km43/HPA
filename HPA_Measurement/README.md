@@ -114,8 +114,7 @@ SELECT
   data.Rudder AS Rudder,
   data.Elevator AS Elevator,
   data.Trim AS Trim,
-  data.LoRaRSSI AS LoRaRSSI,
-  data.RunningTime AS timestamp() / 1000,
+  timestamp() / 1000 AS RunningTime,
 FROM
   'hpa/pub'
 ```
