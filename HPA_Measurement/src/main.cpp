@@ -8,7 +8,7 @@
 #include <M5_IMU_PRO.h>
 #include <MadgwickAHRS.h>
 #include <MahonyAHRS.h>
-#include <esp32s3/rom/crc.h>
+#include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <WiFiUDP.h>
 #include <ArduinoOTA.h>

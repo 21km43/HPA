@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <esp32c3/rom/crc.h>
+#include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <HTTPClient.h>
