@@ -151,4 +151,4 @@ sed -i '1iTimestamp, Date, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GP
 sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```
 
-- [ExcelでTimeStampを日本時間（JST）に置き換える方法](https://qiita.com/ajitama/items/c0b65ac7489f84c3b394)
+CSVから特定の時間を抽出したい場合は、このディレクトリにある[csv_extract.py](./csv_extract.py)を実行する。
