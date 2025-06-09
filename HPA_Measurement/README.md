@@ -76,7 +76,8 @@ MQTTでは、モノの名前を`HPA`、Publish時のトピック名を`hpa/pub`�
 SELECT
   topic(1) AS ID,
   timestamp() AS Timestamp,
-  Time AS Time,
+  data.Date AS Date,
+  data.Time AS Time,
   data.Latitude AS Latitude,
   data.Longitude AS Longitude,
   data.GPSAltitude AS GPSAltitude,
@@ -114,7 +115,7 @@ SELECT
   data.Elevator AS Elevator,
   data.Trim AS Trim,
   data.LoRaRSSI AS LoRaRSSI,
-  data.RunningTime AS RunningTime,
+  data.RunningTime AS timestamp() / 1000,
 FROM
   'hpa/pub'
 ```
@@ -132,11 +133,11 @@ aws dynamodb delete-table --table-name HPA_Table
 CloudShellで以下のコマンドを実行
 
 ```bash
-aws dynamodb scan --table-name HPA_Table | jq -r '.Items[] | [.Timestamp.N, .Time.S, .Latitude.N, .Longitude.N, .GPSAltitude.N, .GPSCourse.N, .GPSSpeed.N, .AccelX.N, .AccelY.N, .AccelZ.N, .GyroX.N, .GyroY.N, .GyroZ.N, .MagX.N, .MagY.N, .MagZ.N, .Roll_Mad6.N, .Pitch_Mad6.N, .Yaw_Mad6.N, .Roll_Mad9.N, .Pitch_Mad9.N, .Yaw_Mad9.N, .Roll_Mah6.N, .Pitch_Mah6.N, .Yaw_Mah6.N, .Roll_Mah9.N, .Pitch_Mah9.N, .Yaw_Mah9.N, .Temperature.N, .Pressure.N, .GroundPressure.N, .BMPAltitude.N, .Altitude.N, .AirSpeed.N, .PropellerRotationSpeed.N, .Rudder.N, .Elevator.N, .Trim.N, .LoRaRSSI.N, .RunningTime.N] | @csv' >> out.csv
+aws dynamodb scan --table-name HPA_Table | jq -r '.Items[] | [.Timestamp.N, .Date.S, .Time.S, .Latitude.N, .Longitude.N, .GPSAltitude.N, .GPSCourse.N, .GPSSpeed.N, .AccelX.N, .AccelY.N, .AccelZ.N, .GyroX.N, .GyroY.N, .GyroZ.N, .MagX.N, .MagY.N, .MagZ.N, .Roll_Mad6.N, .Pitch_Mad6.N, .Yaw_Mad6.N, .Roll_Mad9.N, .Pitch_Mad9.N, .Yaw_Mad9.N, .Roll_Mah6.N, .Pitch_Mah6.N, .Yaw_Mah6.N, .Roll_Mah9.N, .Pitch_Mah9.N, .Yaw_Mah9.N, .Temperature.N, .Pressure.N, .GroundPressure.N, .BMPAltitude.N, .Altitude.N, .AirSpeed.N, .PropellerRotationSpeed.N, .Rudder.N, .Elevator.N, .Trim.N, .LoRaRSSI.N, .RunningTime.N] | @csv' >> out.csv
 
-sed -i '1iTimestamp, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed, AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ, MagX, MagY, MagZ, Roll_Mad6, Pitch_Mad6, Yaw_Mad6, Roll_Mad9, Pitch_Mad9, Yaw_Mad9, Roll_Mah6, Pitch_Mah6, Yaw_Mah6, Roll_Mah9, Pitch_Mah9, Yaw_Mah9, Temperature, Pressure, GroundPressure, BMPAltitude, Altitude, AirSpeed, PropellerRotationSpeed, Rudder, Elevator, Trim, LoRaRSSI, RunningTime' out.csv
+sed -i '1iTimestamp, Date, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed, AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ, MagX, MagY, MagZ, Roll_Mad6, Pitch_Mad6, Yaw_Mad6, Roll_Mad9, Pitch_Mad9, Yaw_Mad9, Roll_Mah6, Pitch_Mah6, Yaw_Mah6, Roll_Mah9, Pitch_Mah9, Yaw_Mah9, Temperature, Pressure, GroundPressure, BMPAltitude, Altitude, AirSpeed, PropellerRotationSpeed, Rudder, Elevator, Trim, LoRaRSSI, RunningTime' out.csv
 
-sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
+sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```
 
 もし上のコマンドでできなければCloudShellでデータベースのみをダウンロードし、ローカルでCSVに加工するのも可。1行目をAWSのCloudShellで実行し、`out.txt`を任意のLinuxマシンへダウンロードして2行目以降をローカルで実行する。また、Linuxで事前に`jq`をインストールする。
@@ -144,11 +145,11 @@ sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```bash
 aws dynamodb scan --table-name HPA_Table > out.txt
 
-cat out.txt | jq -r '.Items[] | [.Timestamp.N, .Time.S, .Latitude.N, .Longitude.N, .GPSAltitude.N, .GPSCourse.N, .GPSSpeed.N, .AccelX.N, .AccelY.N, .AccelZ.N, .GyroX.N, .GyroY.N, .GyroZ.N, .MagX.N, .MagY.N, .MagZ.N, .Roll_Mad6.N, .Pitch_Mad6.N, .Yaw_Mad6.N, .Roll_Mad9.N, .Pitch_Mad9.N, .Yaw_Mad9.N, .Roll_Mah6.N, .Pitch_Mah6.N, .Yaw_Mah6.N, .Roll_Mah9.N, .Pitch_Mah9.N, .Yaw_Mah9.N, .Temperature.N, .Pressure.N, .GroundPressure.N, .BMPAltitude.N, .Altitude.N, .AirSpeed.N, .PropellerRotationSpeed.N, .Rudder.N, .Elevator.N, .Trim.N, .LoRaRSSI.N, .RunningTime.N] | @csv' >> out.csv
+cat out.txt | jq -r '.Items[] | [.Timestamp.N, .Date.S, .Time.S, .Latitude.N, .Longitude.N, .GPSAltitude.N, .GPSCourse.N, .GPSSpeed.N, .AccelX.N, .AccelY.N, .AccelZ.N, .GyroX.N, .GyroY.N, .GyroZ.N, .MagX.N, .MagY.N, .MagZ.N, .Roll_Mad6.N, .Pitch_Mad6.N, .Yaw_Mad6.N, .Roll_Mad9.N, .Pitch_Mad9.N, .Yaw_Mad9.N, .Roll_Mah6.N, .Pitch_Mah6.N, .Yaw_Mah6.N, .Roll_Mah9.N, .Pitch_Mah9.N, .Yaw_Mah9.N, .Temperature.N, .Pressure.N, .GroundPressure.N, .BMPAltitude.N, .Altitude.N, .AirSpeed.N, .PropellerRotationSpeed.N, .Rudder.N, .Elevator.N, .Trim.N, .LoRaRSSI.N, .RunningTime.N] | @csv' >> out.csv
 
-sed -i '1iTimestamp, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed, AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ, MagX, MagY, MagZ, Roll_Mad6, Pitch_Mad6, Yaw_Mad6, Roll_Mad9, Pitch_Mad9, Yaw_Mad9, Roll_Mah6, Pitch_Mah6, Yaw_Mah6, Roll_Mah9, Pitch_Mah9, Yaw_Mah9, Temperature, Pressure, GroundPressure, BMPAltitude, Altitude, AirSpeed, PropellerRotationSpeed, Rudder, Elevator, Trim, LoRaRSSI, RunningTime' out.csv
+sed -i '1iTimestamp, Date, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed, AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ, MagX, MagY, MagZ, Roll_Mad6, Pitch_Mad6, Yaw_Mad6, Roll_Mad9, Pitch_Mad9, Yaw_Mad9, Roll_Mah6, Pitch_Mah6, Yaw_Mah6, Roll_Mah9, Pitch_Mah9, Yaw_Mah9, Temperature, Pressure, GroundPressure, BMPAltitude, Altitude, AirSpeed, PropellerRotationSpeed, Rudder, Elevator, Trim, LoRaRSSI, RunningTime' out.csv
 
-sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
+sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```
 
 - [ExcelでTimeStampを日本時間（JST）に置き換える方法](https://qiita.com/ajitama/items/c0b65ac7489f84c3b394)
