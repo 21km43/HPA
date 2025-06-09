@@ -151,4 +151,4 @@ sed -i '1iTimestamp, Date, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GP
 sed -i '/,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/d' out.csv
 ```
 
-CSVから特定の時間を抽出したい場合は、このディレクトリにある[csv_extract.py](./csv_extract.py)を実行する。
+CSVから特定の時間帯のデータを抽出したい場合は、このディレクトリにある[csv_extract.py](./csv_extract.py)を実行する。
