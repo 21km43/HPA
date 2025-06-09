@@ -514,12 +514,12 @@ void SDWriteTask(void *pvParameters)
 
     // 基準値の設定
     fp.println(
-        "Date, Time, Latitude, Longitude, GPSAltitude, GPSCourse, GPSSpeed, "
-        "AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ, MagX, MagY, MagZ, "
-        "Roll_Mad6, Pitch_Mad6, Yaw_Mad6, Roll_Mad9, Pitch_Mad9, Yaw_Mad9, "
-        "Roll_Mah6, Pitch_Mah6, Yaw_Mah6, Roll_Mah9, Pitch_Mah9, Yaw_Mah9, "
-        "Temperature, Pressure, GroundPressure, BMPAltitude, Altitude, AirSpeed, "
-        "PropellerRotationSpeed, Rudder, Elevator, Trim, RunningTime");
+        "Date,Time,Latitude,Longitude,GPSAltitude,GPSCourse,GPSSpeed,"
+        "AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,"
+        "Roll_Mad6,Pitch_Mad6,Yaw_Mad6,Roll_Mad9,Pitch_Mad9,Yaw_Mad9,"
+        "Roll_Mah6,Pitch_Mah6,Yaw_Mah6,Roll_Mah9,Pitch_Mah9,Yaw_Mah9,"
+        "Temperature,Pressure,GroundPressure,BMPAltitude,Altitude,AirSpeed,"
+        "PropellerRotationSpeed,Rudder,Elevator,Trim,RunningTime");
   }
   else
   {
