@@ -21,6 +21,7 @@
 #include <mbedtls/md.h>
 #include <WiFiClientSecure.h>
 #include <MQTTClient.h>
+#include <ctime>
 #include "secrets.h"
 
 const IPAddress localIP(192, 168, 200, 140); // 自身のIPアドレス
@@ -265,7 +266,7 @@ void GetGPS()
     }
     if (gps.time.isUpdated())
     {
-      gps_hour = (gps.time.hour() + 9) % 24; // UTCをJSTに変換
+      gps_hour = gps.time.hour();
       gps_minute = gps.time.minute();
       gps_second = gps.time.second();
       gps_centisecond = gps.time.centisecond();
