@@ -76,7 +76,8 @@ MQTTでは、モノの名前を`HPA`、Publish時のトピック名を`hpa/pub`�
 SELECT
   topic(1) AS ID,
   timestamp() AS Timestamp,
-  Time AS Time,
+  data.Date AS Date,
+  data.Time AS Time,
   data.Latitude AS Latitude,
   data.Longitude AS Longitude,
   data.GPSAltitude AS GPSAltitude,
@@ -114,7 +115,7 @@ SELECT
   data.Elevator AS Elevator,
   data.Trim AS Trim,
   data.LoRaRSSI AS LoRaRSSI,
-  data.RunningTime AS RunningTime,
+  data.RunningTime AS timestamp() / 1000,
 FROM
   'hpa/pub'
 ```
