@@ -188,17 +188,24 @@ void ahrs_task(void *pvParameters)
     ahrs_mahony_6dof.updateIMU(gyroX, gyroY, gyroZ, accelX, accelY, accelZ);
     ahrs_mahony_9dof.update(gyroX, gyroY, gyroZ, accelX, accelY, accelZ, magX, magY, magZ);
 
-    roll_mad6 = ahrs_madgwick_6dof.getRoll() + 180.0f;
-    pitch_mad6 = ahrs_madgwick_6dof.getPitch() + 180.0f;
+    roll_mad6 = ahrs_madgwick_6dof.getRoll();
+    roll_mad6 = roll_mad6 < 0 ? roll_mad6 + 180.0f : roll_mad6 - 180.0f;
+    pitch_mad6 = ahrs_madgwick_6dof.getPitch();
     yaw_mad6 = ahrs_madgwick_6dof.getYaw();
-    roll_mad9 = ahrs_madgwick_9dof.getRoll() + 180.0f;
-    pitch_mad9 = ahrs_madgwick_9dof.getPitch() + 180.0f;
+
+    roll_mad9 = ahrs_madgwick_9dof.getRoll();
+    roll_mad9 = roll_mad9 < 0 ? roll_mad9 + 180.0f : roll_mad9 - 180.0f;
+    pitch_mad9 = ahrs_madgwick_9dof.getPitch();
     yaw_mad9 = ahrs_madgwick_9dof.getYaw();
-    roll_mah6 = ahrs_mahony_6dof.getRoll() + 180.0f;
-    pitch_mah6 = ahrs_mahony_6dof.getPitch() + 180.0f;
+
+    roll_mah6 = ahrs_mahony_6dof.getRoll();
+    roll_mah6 = roll_mah6 < 0 ? roll_mah6 + 180.0f : roll_mah6 - 180.0f;
+    pitch_mah6 = ahrs_mahony_6dof.getPitch();
     yaw_mah6 = ahrs_mahony_6dof.getYaw();
-    roll_mah9 = ahrs_mahony_9dof.getRoll() + 180.0f;
-    pitch_mah9 = ahrs_mahony_9dof.getPitch() + 180.0f;
+
+    roll_mah9 = ahrs_mahony_9dof.getRoll();
+    roll_mah9 = roll_mah9 < 0 ? roll_mah9 + 180.0f : roll_mah9 - 180.0f;
+    pitch_mah9 = ahrs_mahony_9dof.getPitch();
     yaw_mah9 = ahrs_mahony_9dof.getYaw();
 
     delay(AHRS_SAMPLING / 4);
