@@ -24,21 +24,15 @@
 #include <ctime>
 #include "secrets.h"
 
-const IPAddress localIP(192, 168, 200, 140); // 自身のIPアドレス
-const IPAddress gateway(192, 168, 200, 157); // デフォルトゲートウェイ
-const IPAddress subnet(255, 255, 255, 0);    // サブネットマスク
-const IPAddress dns1(8, 8, 8, 8);            // 優先DNS
-const IPAddress dns2(8, 8, 4, 4);            // 代替DNS
-
 struct ControlData
 {
   float rudder;   // 操舵角
   float elevator; // エレベータ角
-  float trim;     // トリム角
+  int trim;       // トリム角
 };
 
-const int udpPort = 15646; // UDPポート番号
-WiFiUDP wifiUdp;           // 操舵 -> 計測の通信
+const int UDP_PORT = 15646; // UDPポート番号
+WiFiUDP wifiUdp;            // 操舵 -> 計測の通信
 
 constexpr int USB_BAUDRATE = 115200;
 
@@ -63,7 +57,7 @@ constexpr int SD_SPI_CS_PIN = 4;
 
 float rudder_rotation = 0.0f;
 float elevator_rotation = 0.0f;
-float trim = 0.0f;
+int trim = 0;
 
 int watchdog_count;
 
@@ -611,7 +605,7 @@ void SDWriteTask(void *pvParameters)
     PRINT_COMMA;
     fp.printf("%.3f", elevator_rotation);
     PRINT_COMMA;
-    fp.printf("%.3f", trim);
+    fp.printf("%d", trim);
     PRINT_COMMA;
     fp.print(millis() / 1000.0);
     PRINT_COMMA;
@@ -744,7 +738,7 @@ struct LoRaData
   float PropellerRotationSpeed;
   float Rudder;
   float Elevator;
-  float Trim;
+  int Trim;
   float RunningTime;
 };
 
@@ -902,6 +896,21 @@ void connectAWS()
     delay(500);
   }
 
+  IPAddress localIP = WiFi.localIP();  
+  WiFi.config(
+    IPAddress(localIP[0], localIP[1], localIP[2], 140), 
+    WiFi.gatewayIP(), 
+    WiFi.subnetMask(),
+    IPAddress(8, 8, 8, 8),
+    IPAddress(8, 8, 4, 4)
+  );
+
+  WiFi.reconnect();
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+  }
+
   // Configure WiFiClientSecure to use the AWS IoT device credentials
   net.setCACert(AWS_CERT_CA);
   net.setCertificate(AWS_CERT_CRT);
@@ -937,7 +946,7 @@ void AWS_task(void *parameter)
   connectAWS();
   while (1)
   {
-    if (!client.loop())
+    if (!client.loop() || WiFi.status() != WL_CONNECTED)
     {
       Serial.println("AWS IoT Disconnected!");
       connectAWS();
@@ -972,10 +981,9 @@ void setup()
 
   // Configure and start the WiFi station
   WiFi.mode(WIFI_STA);
-  WiFi.config(localIP, gateway, subnet, dns1, dns2);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  wifiUdp.begin(udpPort);
+  wifiUdp.begin(UDP_PORT);
 
   InitBMP280();
   delay(100);
@@ -1055,8 +1063,10 @@ void loop()
     CoreS3.Display.printf("Roll: %.2f, Pitch: %.2f, Yaw: %.2f\r\n", roll_mad9, pitch_mad9, yaw_mad9);
     CoreS3.Display.printf("Air Speed: %.2f\r\n", air_speed);
     CoreS3.Display.printf("Propeller Rotation Speed: %d\r\n", propeller_rotation);
-    CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %.2f\r\n", rudder_rotation, elevator_rotation, trim);
+    CoreS3.Display.printf("Rudder: %.2f, Elevator: %.2f, Trim: %d\r\n", rudder_rotation, elevator_rotation, trim);
     CoreS3.Display.printf("Wi-Fi Status: %s\r\n", WiFi.status() == WL_CONNECTED ? "Connected" : "Not Connected");
+    CoreS3.Display.printf("IP Address: %s\r\n", WiFi.localIP().toString().c_str());
+    CoreS3.Display.printf("Watchdog count: %d\r\n", watchdog_count);
   }
 
   watchdog_count = 0;
