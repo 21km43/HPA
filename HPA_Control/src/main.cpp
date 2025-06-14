@@ -146,8 +146,8 @@ void loop() {
 
     if (WiFi.status() == WL_CONNECTED) {
       ControlData controlData;
-      controlData.rudder = b0;
-      controlData.elevator = b1;
+      controlData.rudder = a0;
+      controlData.elevator = a1;
       controlData.trim = trimVal;
 
       IPAddress localIP = WiFi.localIP();
