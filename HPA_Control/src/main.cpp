@@ -15,11 +15,12 @@ struct ControlData
 };
 
 const int UDP_PORT = 15646; // UDPポート番号
+const int UDP_INTERVAL = 100; // UDP送信間隔（ミリ秒）
 WiFiUDP wifiUdp;            // 操舵 -> 計測の通信
 #endif
 
 const byte EN_PIN = 2;
-const long BAUDRATE = 115200;
+const long ICS_BAUDRATE = 115200;
 const int TIMEOUT = 10; // 通信できてないか確認用にわざと遅めに設定
 
 int off0;
@@ -33,20 +34,24 @@ int b0 = 0;
 int b1 = 0;
 
 int trimVal;
-int trimMax = 10;
+const int trimMax = 10;
 long previous;
-long interval = 1000;
+const int TRIM_INTERVAL = 1000;
+
+const int TRIM_UP_PIN = 6;
+const int TRIM_DOWN_PIN = 7;
+const int RUDDER_PIN = A0;
+const int ELEVATOR_PIN = A1;
 
 #if defined(ARDUINO_UNOR4_MINIMA) || defined(ARDUINO_UNOR4_WIFI)
 #define ICS_SERIAL Serial1
 #else
 #define ICS_SERIAL Serial
 #endif
-IcsHardSerialClass krs(&ICS_SERIAL, EN_PIN, BAUDRATE, TIMEOUT); // インスタンス＋ENピン(2番ピン)およびUARTの指定
+IcsHardSerialClass krs(&ICS_SERIAL, EN_PIN, ICS_BAUDRATE, TIMEOUT); // インスタンス＋ENピン(2番ピン)およびUARTの指定
 
 void setup()
 {
-    // put your setup code here, to run once:
     // Serial.begin(115200);
     // delay(1000);
 #ifdef ARDUINO_UNOR4_WIFI
@@ -55,13 +60,13 @@ void setup()
 #endif
     krs.begin(); // サーボモータの通信初期設定
 
-    pinMode(A0, INPUT);
-    pinMode(A1, INPUT);
-    pinMode(6, INPUT_PULLUP);
-    pinMode(7, INPUT_PULLUP);
+    pinMode(RUDDER_PIN, INPUT);
+    pinMode(ELEVATOR_PIN, INPUT);
+    pinMode(TRIM_UP_PIN, INPUT_PULLUP);
+    pinMode(TRIM_DOWN_PIN, INPUT_PULLUP);
 
-    off0 = analogRead(A0);
-    off1 = analogRead(A1);
+    off0 = analogRead(RUDDER_PIN);
+    off1 = analogRead(ELEVATOR_PIN);
 
     trimVal = 0;
     previous = millis();
@@ -69,13 +74,12 @@ void setup()
 
 void loop()
 {
-    // put your main code here, to run repeatedly:
-    if (digitalRead(6) == LOW && millis() - previous > interval)
+    if (digitalRead(TRIM_UP_PIN) == LOW && millis() - previous > TRIM_INTERVAL)
     {
         trimVal += 1;
         previous = millis();
     }
-    if (digitalRead(7) == LOW && millis() - previous > interval)
+    if (digitalRead(TRIM_DOWN_PIN) == LOW && millis() - previous > TRIM_INTERVAL)
     {
         trimVal -= 1;
         previous = millis();
@@ -86,12 +90,12 @@ void loop()
     if (trimVal < -trimMax)
         trimVal = -trimMax;
 
-    a0 = 0.15 * (float(analogRead(A0) - off0) / 512.0) + 0.85 * a0;
-    a1 = 0.15 * (float(analogRead(A1) - off1) / 512.0) + 0.85 * a1;
+    a0 = 0.15 * (float(analogRead(RUDDER_PIN) - off0) / 512.0) + 0.85 * a0;
+    a1 = 0.15 * (float(analogRead(ELEVATOR_PIN) - off1) / 512.0) + 0.85 * a1;
 
     /*
-      a0 = float(analogRead(A0) - 512)/512.0;
-      a1 = float(analogRead(A1) - 512)/512.0;
+      a0 = float(analogRead(RUDDER_PIN) - 512)/512.0;
+      a1 = float(analogRead(ELEVATOR_PIN) - 512)/512.0;
     */
 
     if (-1 < a0 && a0 < -0.02)
@@ -157,9 +161,9 @@ void loop()
     krs.setPos(1, b1);
 
 #ifdef ARDUINO_UNOR4_WIFI
-    //----- UDP 送信（50 ms 間隔） -----
+    //----- UDP 送信（100 ms 間隔） -----
     static unsigned long t0 = 0;
-    if (millis() - t0 >= interval)
+    if (millis() - t0 >= UDP_INTERVAL)
     {
         t0 = millis();
 
