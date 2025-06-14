@@ -22,6 +22,7 @@
 #include <ctime>
 #include "secrets.h"
 
+
 struct ControlData
 {
   float rudder;   // 操舵角
@@ -36,9 +37,15 @@ const int HTTP_PORT = 35481; // HTTPポート番号
 
 constexpr int USB_BAUDRATE = 115200;
 
+// #define GPS_NEO_M9N
 #define GPSSerial Serial2
+#ifdef GPS_NEO_M9N
+constexpr int GPS_SERIAL_BAUDRATE = 38400;
+constexpr int GPS_RX = 7, GPS_TX = 6;
+#else
 constexpr int GPS_SERIAL_BAUDRATE = 115200;
 constexpr int GPS_RX = 13, GPS_TX = 5;
+#endif
 
 SoftwareSerial ALTSerial;
 constexpr int ALT_SERIAL_BAUDRATE = 9600;
