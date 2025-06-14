@@ -7,8 +7,8 @@
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#daf9fb;" vertex="1" parent="1">
           <mxGeometry x="760" y="140" width="350" height="151.25" as="geometry" />
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-13" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#daf9fb;" vertex="1" parent="1">
-          <mxGeometry x="235" y="-30" width="505" height="80" as="geometry" />
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-13" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6E6E6;fontColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="240" y="-30" width="500" height="80" as="geometry" />
         </mxCell>
         <mxCell id="qhWnbRb1_LZRBb_jjzeY-1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#daf9fb;" parent="1" vertex="1">
           <mxGeometry x="240" y="90" width="500" height="200" as="geometry" />
@@ -123,7 +123,7 @@
         <mxCell id="IAhwxvjueymBkviinYW7-38" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="30" y="200" width="130" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="IAhwxvjueymBkviinYW7-40" value="&lt;div&gt;Androidスマホ&lt;/div&gt;&lt;div&gt;（パイロット）&lt;/div&gt;&lt;div&gt;※ テザリング親機&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+        <mxCell id="IAhwxvjueymBkviinYW7-40" value="&lt;div&gt;Androidスマホ&lt;/div&gt;&lt;div&gt;（パイロット）&lt;/div&gt;&lt;div&gt;※テザリング親機&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="41.25" y="120" width="107.5" height="42.5" as="geometry" />
         </mxCell>
         <mxCell id="IAhwxvjueymBkviinYW7-41" value="&lt;div&gt;地上局&lt;/div&gt;&lt;div&gt;（指示者）&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
@@ -222,9 +222,6 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-11" value="&lt;b&gt;AWS サーバー&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
-          <mxGeometry x="235" y="-60" width="110" height="20" as="geometry" />
-        </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-12" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="594" y="-10" width="115" height="40" as="geometry" />
         </mxCell>
@@ -249,11 +246,11 @@
             <mxPoint x="800" y="10" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-18" value="閲覧者" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="800" y="-10" width="80" height="40" as="geometry" />
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-18" value="遠隔閲覧者" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="808" y="-15" width="99" height="50" as="geometry" />
         </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-19" value="トリムスイッチ" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="950" y="280" width="100" height="30" as="geometry" />
+          <mxGeometry x="963.75" y="280" width="100" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-20" value="&lt;div&gt;ジョイスティック&lt;/div&gt;&lt;div&gt;TX-26PRR-B10K&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="800" y="280" width="115" height="30" as="geometry" />
@@ -269,7 +266,7 @@
             <mxPoint x="897.5" y="280" as="sourcePoint" />
             <mxPoint x="880" y="220" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="1000" y="250" />
+              <mxPoint x="1014" y="250" />
               <mxPoint x="880" y="250" />
             </Array>
           </mxGeometry>
@@ -309,6 +306,9 @@
             <mxPoint x="960" y="132.0950000000001" as="targetPoint" />
             <Array as="points" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-37" value="&lt;b&gt;&lt;font style=&quot;font-size: 17px;&quot;&gt;Amazon Web Service (AWS)&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="240" y="-60" width="246.5" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
