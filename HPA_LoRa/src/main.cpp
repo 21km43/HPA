@@ -25,11 +25,11 @@ byte set_data_buff[11] = {0x00};
 constexpr char SSID[] = "HPA_LoRa";
 constexpr char PASSPHRASE[] = "HPA_Password";
 
-String SMARTPHONE_IP = "192.168.0.50"; 
+String SMARTPHONE_IP = "192.168.1.50";
 
-const IPAddress localIP(192, 168, 0, 0); // 自身のIPアドレス
-const IPAddress gateway(192, 168, 0, 1); // デフォルトゲートウェイ
-const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
+const IPAddress localIP(192, 168, 1, 1);  // 自身のIPアドレス
+const IPAddress gateway(192, 168, 1, 1);  // デフォルトゲートウェイ
+const IPAddress subnet(255, 255, 255, 0); // サブネットマスク
 
 HTTPClient wifiHttp;         // HTTP通信（スマホ送信用）
 const int HTTP_PORT = 35481; // HTTPポート番号
@@ -372,14 +372,11 @@ void loop()
 
   delay(10);
 #else
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    String url_target = "http://" + SMARTPHONE_IP + ":" + String(HTTP_PORT) + "/post";
-    // Serial.println("Sending data to: " + url_target);
-    wifiHttp.begin(url_target);
-    int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
-    wifiHttp.end();
-  }
+  String url_target = "http://" + SMARTPHONE_IP + ":" + String(HTTP_PORT) + "/post";
+  // Serial.println("Sending data to: " + url_target);
+  wifiHttp.begin(url_target);
+  int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
+  wifiHttp.end();
   delay(50);
 #endif
 }
