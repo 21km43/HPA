@@ -25,9 +25,14 @@ byte set_data_buff[11] = {0x00};
 constexpr char SSID[] = "HPA_LoRa";
 constexpr char PASSPHRASE[] = "HPA_Password";
 
-const IPAddress localIP(192, 168, 70, 140); // 自身のIPアドレス
-const IPAddress gateway(192, 168, 70, 157); // デフォルトゲートウェイ
+String SMARTPHONE_IP = "192.168.0.50"; 
+
+const IPAddress localIP(192, 168, 0, 0); // 自身のIPアドレス
+const IPAddress gateway(192, 168, 0, 1); // デフォルトゲートウェイ
 const IPAddress subnet(255, 255, 255, 0);   // サブネットマスク
+
+HTTPClient wifiHttp;         // HTTP通信（スマホ送信用）
+const int HTTP_PORT = 35481; // HTTPポート番号
 
 #pragma region SERVER
 
@@ -77,7 +82,7 @@ struct LoRaData
   float PropellerRotationSpeed;
   float Rudder;
   float Elevator;
-  float Trim;
+  int Trim;
   float RunningTime;
 };
 
@@ -101,19 +106,6 @@ std::vector<uint8_t> lora_packet_buff;
 bool lora_received = false;
 LoRaPacket lora_packet;
 int lora_rssi = 0;
-
-void sha256(const char *p_payload, unsigned char *p_hmacResult)
-{
-  mbedtls_md_context_t ctx;
-  mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
-
-  mbedtls_md_init(&ctx);
-  mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(md_type), 1);
-  mbedtls_md_starts(&ctx);
-  mbedtls_md_hmac_update(&ctx, (const unsigned char *)p_payload, strlen(p_payload));
-  mbedtls_md_finish(&ctx, p_hmacResult);
-  mbedtls_md_free(&ctx);
-}
 
 void LoRaRecvTask(void *pvParameters)
 {
@@ -195,13 +187,6 @@ void LoRaRecvTask(void *pvParameters)
       // JSONフォーマットの文字列に変換する
       serializeJson(json_array, json_string, sizeof(json_string));
 
-      unsigned char SHA256[32];
-      sha256(json_string, SHA256);
-      for (int i = 0; i < 32; i++)
-      {
-        sprintf((char *)&SHA256_str[i * 2], "%02x", SHA256[i]);
-      }
-
       Serial.println(json_string);
     }
 
@@ -218,33 +203,11 @@ void InitLoRa()
 }
 #pragma endregion
 
-// HTTPサーバーでの処理
-WebServer server(80);
-
-void handleRoot()
-{
-  server.send(HTTP_CODE_OK, "text/plain", "index");
-}
-void handleNotFound()
-{
-  server.send(HTTP_CODE_NOT_FOUND, "text/plain", "Not Found");
-}
-void handleGetMeasurementData()
-{
-  server.sendHeader("SHA256", SHA256_str);
-  server.send(HTTP_CODE_OK, "application/json", json_string);
-}
-
 void InitServer()
 {
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(localIP, gateway, subnet);
   WiFi.softAP(SSID, PASSPHRASE);
-
-  server.on("/", handleRoot);
-  server.on("/GetMeasurementData", handleGetMeasurementData);
-  server.onNotFound(handleNotFound);
-  server.begin();
 }
 #pragma endregion
 
@@ -409,6 +372,14 @@ void loop()
 
   delay(10);
 #else
-  server.handleClient();
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    String url_target = "http://" + SMARTPHONE_IP + ":" + String(HTTP_PORT) + "/post";
+    // Serial.println("Sending data to: " + url_target);
+    wifiHttp.begin(url_target);
+    int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
+    wifiHttp.end();
+  }
+  delay(50);
 #endif
 }

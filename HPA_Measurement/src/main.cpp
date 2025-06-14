@@ -11,8 +11,6 @@
 #include <esp32/rom/crc.h>
 #include <WiFi.h>
 #include <WiFiUDP.h>
-#include <ArduinoOTA.h>
-#include <WebServer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
@@ -31,8 +29,10 @@ struct ControlData
   int trim;       // トリム角
 };
 
-const int UDP_PORT = 15646; // UDPポート番号
-WiFiUDP wifiUdp;            // 操舵 -> 計測の通信
+const int UDP_PORT = 15646;  // UDPポート番号
+WiFiUDP wifiUdp;             // 操舵 -> 計測の通信
+HTTPClient wifiHttp;         // HTTP通信（スマホ送信用）
+const int HTTP_PORT = 35481; // HTTPポート番号
 
 constexpr int USB_BAUDRATE = 115200;
 
@@ -60,70 +60,6 @@ float elevator_rotation = 0.0f;
 int trim = 0;
 
 int watchdog_count;
-
-#pragma region OTA
-void ota_handle(void *parameter)
-{
-  for (;;)
-  {
-    ArduinoOTA.handle();
-    delay(1000);
-  }
-}
-
-void setupOTA(const char *nameprefix)
-{
-  // Configure the hostname
-  uint16_t maxlen = strlen(nameprefix) + 7;
-  char *fullhostname = new char[maxlen];
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
-  snprintf(fullhostname, maxlen, "%s-%02x%02x%02x", nameprefix, mac[3], mac[4], mac[5]);
-  ArduinoOTA.setHostname(fullhostname);
-  delete[] fullhostname;
-
-  ArduinoOTA.onStart([]()
-                     {
-	//NOTE: make .detach() here for all functions called by Ticker.h library - not to interrupt transfer process in any way.
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH)
-      type = "sketch";
-    else // U_SPIFFS
-      type = "filesystem";
-
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-    Serial.println("Start updating " + type); });
-
-  ArduinoOTA.onEnd([]()
-                   { Serial.println("\nEnd"); });
-
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
-                        { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); });
-
-  ArduinoOTA.onError([](ota_error_t error)
-                     {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("\nAuth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("\nBegin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("\nConnect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("\nReceive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("\nEnd Failed"); });
-
-  ArduinoOTA.begin();
-
-  Serial.println("OTA Initialized");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  xTaskCreate(
-      ota_handle,   /* Task function. */
-      "OTA_HANDLE", /* String with name of task. */
-      10000,        /* Stack size in bytes. */
-      NULL,         /* Parameter passed as input of the task */
-      1,            /* Priority of the task. */
-      NULL);        /* Task handle. */
-}
-#pragma endregion
 
 #pragma region BMP280
 // 気圧計による気圧、温度の測定及び高度の計算
@@ -690,8 +626,6 @@ void CreateJson()
 }
 #pragma endregion
 
-#pragma region SERVER
-
 #pragma region LORA
 #pragma pack(1)
 struct LoRaData
@@ -818,68 +752,6 @@ void InitLoRa()
 }
 #pragma endregion
 
-void sha256(const char *p_payload, unsigned char *p_hmacResult)
-{
-  mbedtls_md_context_t ctx;
-  mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
-
-  mbedtls_md_init(&ctx);
-  mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(md_type), 1);
-  mbedtls_md_starts(&ctx);
-  mbedtls_md_hmac_update(&ctx, (const unsigned char *)p_payload, strlen(p_payload));
-  mbedtls_md_finish(&ctx, p_hmacResult);
-  mbedtls_md_free(&ctx);
-}
-
-// HTTPサーバーでの処理
-WebServer server(80);
-
-void handleRoot()
-{
-  server.send(HTTP_CODE_OK, "text/plain", "index");
-}
-void handleNotFound()
-{
-  server.send(HTTP_CODE_NOT_FOUND, "text/plain", "Not Found");
-}
-void handleSetGroundPressure()
-{
-  if (server.hasArg("Pressure"))
-  {
-    ground_pressure = server.arg("Pressure").toFloat();
-  }
-  server.send(HTTP_CODE_OK, "text/plain", String(ground_pressure));
-}
-void handleGetGroundPressure()
-{
-  server.send(HTTP_CODE_OK, "text/plain", String(ground_pressure));
-}
-void handleGetMeasurementData()
-{
-  unsigned char SHA256[32];
-  sha256(json_string, SHA256);
-  char SHA256_str[64 + 1];
-  for (int i = 0; i < 32; i++)
-  {
-    sprintf((char *)&SHA256_str[i * 2], "%02x", SHA256[i]);
-  }
-  server.sendHeader("SHA256", SHA256_str);
-
-  server.send(HTTP_CODE_OK, "application/json", json_string);
-}
-
-void InitServer()
-{
-  setupOTA("HPA");
-  server.on("/", handleRoot);
-  server.on("/SetGroundPressure", handleSetGroundPressure);
-  server.on("/GetGroundPressure", handleGetGroundPressure);
-  server.on("/GetMeasurementData", handleGetMeasurementData);
-  server.onNotFound(handleNotFound);
-  server.begin();
-}
-#pragma endregion
-
 #pragma region AWS
 #define THINGNAME "HPA"
 // The MQTT topics that this device should publish/subscribe
@@ -890,21 +762,6 @@ MQTTClient client = MQTTClient(256);
 
 void connectAWS()
 {
-  WiFi.reconnect();
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-  }
-
-  IPAddress localIP = WiFi.localIP();  
-  WiFi.config(
-    IPAddress(localIP[0], localIP[1], localIP[2], 140), 
-    WiFi.gatewayIP(), 
-    WiFi.subnetMask(),
-    IPAddress(8, 8, 8, 8),
-    IPAddress(8, 8, 4, 4)
-  );
-
   WiFi.reconnect();
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -971,6 +828,22 @@ void watchdog_task(void *pvParameters)
   }
 }
 
+void send_task(void *pvParameters)
+{
+  while (1)
+  {
+    if (WiFi.status() == WL_CONNECTED)
+    {
+      String url_target = "http://" + String(WiFi.gatewayIP()) + ":" + String(HTTP_PORT) + "/post";
+      // Serial.println("Sending data to: " + url_target);
+      wifiHttp.begin(url_target);
+      int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
+      wifiHttp.end();
+    }
+    delay(50);
+  }
+}
+
 void setup()
 {
   Serial.begin(USB_BAUDRATE);
@@ -997,16 +870,16 @@ void setup()
   delay(100);
   InitAltitude();
   delay(100);
-
   InitSD();
-  delay(100);
-  InitServer();
   delay(100);
   InitLoRa();
   delay(100);
 
   // 最低でも8kBのスタックサイズが必要
   xTaskCreatePinnedToCore(AWS_task, "AWS_task", 16384, NULL, 1, NULL, 1);
+
+  // スマホへのデータ送信用
+  xTaskCreatePinnedToCore(send_task, "send_task", 8192, NULL, 1, NULL, 1);
 
   // 5秒以上データが更新されない場合にESP32をリセットする
   watchdog_count = 0;
@@ -1017,10 +890,6 @@ void loop()
 {
   CoreS3.update();
 
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    server.handleClient();
-  }
   if (wifiUdp.parsePacket() == sizeof(ControlData))
   {
     ControlData controlData;
