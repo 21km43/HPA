@@ -834,7 +834,8 @@ void send_task(void *pvParameters)
   {
     if (WiFi.status() == WL_CONNECTED)
     {
-      String url_target = "http://" + String(WiFi.gatewayIP()) + ":" + String(HTTP_PORT) + "/post";
+      // デフォルトゲートウェイのIPアドレスがスマホのIPアドレスが同じという前提で書いている。環境によっては動作しないかも
+      String url_target = "http://" + WiFi.gatewayIP().toString() + ":" + String(HTTP_PORT) + "/post";
       // Serial.println("Sending data to: " + url_target);
       wifiHttp.begin(url_target);
       int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
