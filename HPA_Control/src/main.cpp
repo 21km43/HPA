@@ -1,4 +1,18 @@
 #include <IcsHardSerialClass.h>
+#include <WiFiS3.h>
+#include <WiFiUdp.h>
+
+const char WIFI_SSID[] = "HPA_Measurement";
+const char WIFI_PASSWORD[] = "HPA_Password";
+
+struct ControlData {
+  float rudder;    // 操舵角
+  float elevator;  // エレベータ角
+  int trim;      // トリム角
+};
+
+const int UDP_PORT = 15646;  // UDPポート番号
+WiFiUDP wifiUdp;             // 操舵 -> 計測の通信
 
 const byte EN_PIN = 2;
 const long BAUDRATE = 115200;
@@ -28,6 +42,9 @@ void setup() {
   // put your setup code here, to run once:
   //Serial.begin(115200);
   //delay(1000);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  wifiUdp.begin(UDP_PORT);
 
   krs.begin();  //サーボモータの通信初期設定
 
@@ -115,7 +132,29 @@ void loop() {
   krs.setPos(0,b0);    
   krs.setPos(1,b1);
 
-  //delay(50); 
+  //----- UDP 送信（50 ms 間隔） -----
+  static unsigned long t0 = 0;
+  if (millis() - t0 >= interval) {
+    t0 = millis();
 
-  
+    if (WiFi.status() == WL_CONNECTED) {
+      ControlData controlData;
+      controlData.rudder = b0;
+      controlData.elevator = b1;
+      controlData.trim = trim;
+
+      IPAddress localIP = WiFi.localIP();
+      IPAddress subnet = WiFi.localIP(); 
+      IPAddress measurementIP(
+        localIP[0] | (~subnet[0]), 
+        localIP[1] | (~subnet[1]),
+        localIP[2] | (~subnet[2]),
+        localIP[3] | (~subnet[3])
+      );
+
+      wifiUdp.beginPacket(measurementIP, UDP_PORT);
+      wifiUdp.write((uint8_t*)(&controlData), sizeof(ControlData));
+      wifiUdp.endPacket();
+    }
+  }
 }
