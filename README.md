@@ -1,4 +1,4 @@
-# HPA System
+# 人力飛行機電装システム
 
 人力飛行機の計測システムのリポジトリ
 
@@ -19,7 +19,3 @@ git update-index --assume-unchanged HPA_Measurement/src/secrets.h
 ## Diagram
 
 ![HPA.drawio](HPA.drawio.svg)
-
-## Overview
-
-![HPA.overview](hpa_overview.jpg)

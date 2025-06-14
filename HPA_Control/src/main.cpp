@@ -14,14 +14,16 @@ struct ControlData
     int trim;       // トリム角
 };
 
-const int UDP_PORT = 15646; // UDPポート番号
+const int UDP_PORT = 15646;   // UDPポート番号
 const int UDP_INTERVAL = 100; // UDP送信間隔（ミリ秒）
-WiFiUDP wifiUdp;            // 操舵 -> 計測の通信
+WiFiUDP wifiUdp;              // 操舵 -> 計測の通信
 #endif
+
+// #define SERIAL_DEBUG
 
 const byte EN_PIN = 2;
 const long ICS_BAUDRATE = 115200;
-const int TIMEOUT = 10; // 通信できてないか確認用にわざと遅めに設定
+const int TIMEOUT = 10;
 
 int off0;
 int off1;
@@ -52,8 +54,10 @@ IcsHardSerialClass krs(&ICS_SERIAL, EN_PIN, ICS_BAUDRATE, TIMEOUT); // インス
 
 void setup()
 {
-    // Serial.begin(115200);
-    // delay(1000);
+#if (defined(ARDUINO_UNOR4_MINIMA) || defined(ARDUINO_UNOR4_WIFI)) && defined(SERIAL_DEBUG)
+    Serial.begin(115200);
+    delay(1000);
+#endif
 #ifdef ARDUINO_UNOR4_WIFI
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     wifiUdp.begin(UDP_PORT);
@@ -92,11 +96,6 @@ void loop()
 
     a0 = 0.15 * (float(analogRead(RUDDER_PIN) - off0) / 512.0) + 0.85 * a0;
     a1 = 0.15 * (float(analogRead(ELEVATOR_PIN) - off1) / 512.0) + 0.85 * a1;
-
-    /*
-      a0 = float(analogRead(RUDDER_PIN) - 512)/512.0;
-      a1 = float(analogRead(ELEVATOR_PIN) - 512)/512.0;
-    */
 
     if (-1 < a0 && a0 < -0.02)
     {
@@ -142,20 +141,20 @@ void loop()
         a1 = 1.0;
     }
 
-    /*
-      Serial.print(a0);
-      Serial.print("\t");
-      Serial.println(a1);
-    */
+#ifdef SERIAL_DEBUG
+    Serial.print(a0);
+    Serial.print("\t");
+    Serial.println(a1);
+#endif
 
     b0 = (int)(7500 + 1381.3 + rudMax * a0);
     b1 = (int)(7500 + 1547.3 - eleMax * a1 + trim_min * trimVal);
 
-    /*
-      Serial.print(b0);
-      Serial.print("\t");
-      Serial.println(b1);
-    */
+#ifdef SERIAL_DEBUG
+    Serial.print(b0);
+    Serial.print("\t");
+    Serial.println(b1);
+#endif
 
     krs.setPos(0, b0);
     krs.setPos(1, b1);
@@ -174,6 +173,7 @@ void loop()
             controlData.elevator = a1;
             controlData.trim = trimVal;
 
+            // 計測のIPアドレスが不定なので、ブロードキャストとして送信
             IPAddress localIP = WiFi.localIP();
             IPAddress subnet = WiFi.localIP();
             IPAddress measurementIP(
