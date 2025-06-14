@@ -1,4 +1,6 @@
 #include <IcsHardSerialClass.h>
+
+#ifdef ARDUINO_UNOR4_WIFI
 #include <WiFiS3.h>
 #include <WiFiUdp.h>
 
@@ -13,6 +15,7 @@ struct ControlData {
 
 const int UDP_PORT = 15646;  // UDPポート番号
 WiFiUDP wifiUdp;             // 操舵 -> 計測の通信
+#endif
 
 const byte EN_PIN = 2;
 const long BAUDRATE = 115200;
@@ -29,23 +32,26 @@ float trim_min = 13.9;
 int b0 = 0;
 int b1 = 0;
 
-int trim;
+int trimVal;
 int trimMax = 10;
 long previous;
 long interval = 1000;
 
-
-IcsHardSerialClass krs(&Serial1,EN_PIN,BAUDRATE,TIMEOUT);  //インスタンス＋ENピン(2番ピン)およびUARTの指定
-
+#if defined(ARDUINO_UNOR4_MINIMA) || defined(ARDUINO_UNOR4_WIFI)
+#define ICS_SERIAL Serial1
+#else
+#define ICS_SERIAL Serial
+#endif
+IcsHardSerialClass krs(&ICS_SERIAL,EN_PIN,BAUDRATE,TIMEOUT);  //インスタンス＋ENピン(2番ピン)およびUARTの指定
 
 void setup() {
   // put your setup code here, to run once:
   //Serial.begin(115200);
   //delay(1000);
-
+#ifdef ARDUINO_UNOR4_WIFI
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   wifiUdp.begin(UDP_PORT);
-
+#endif
   krs.begin();  //サーボモータの通信初期設定
 
   pinMode(A0, INPUT);
@@ -56,7 +62,7 @@ void setup() {
   off0 = analogRead(A0);
   off1 = analogRead(A1);
 
-  trim = 0;
+  trimVal = 0;
   previous = millis();
 }
 
@@ -64,16 +70,16 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   if(digitalRead(6) == LOW && millis() - previous > interval){
-    trim += 1;
+    trimVal += 1;
     previous = millis();
   }
   if(digitalRead(7) == LOW && millis() - previous > interval){
-    trim -= 1;
+    trimVal -= 1;
     previous = millis();
   }
 
-  if(trim > trimMax) trim = trimMax;
-  if(trim < -trimMax) trim = -trimMax;
+  if(trimVal > trimMax) trimVal = trimMax;
+  if(trimVal < -trimMax) trimVal = -trimMax;
 
   a0 = 0.15*(float(analogRead(A0) - off0)/512.0) + 0.85*a0;
   a1 = 0.15*(float(analogRead(A1) - off1)/512.0) + 0.85*a1;
@@ -119,7 +125,7 @@ void loop() {
 */
 
   b0 = (int)(7500 + 1381.3 + rudMax*a0);
-  b1 = (int)(7500 + 1547.3 - eleMax*a1 + trim_min*trim);
+  b1 = (int)(7500 + 1547.3 - eleMax*a1 + trim_min*trimVal);
 
 /*
   Serial.print(b0);
@@ -132,6 +138,7 @@ void loop() {
   krs.setPos(0,b0);    
   krs.setPos(1,b1);
 
+#ifdef ARDUINO_UNOR4_WIFI
   //----- UDP 送信（50 ms 間隔） -----
   static unsigned long t0 = 0;
   if (millis() - t0 >= interval) {
@@ -141,7 +148,7 @@ void loop() {
       ControlData controlData;
       controlData.rudder = b0;
       controlData.elevator = b1;
-      controlData.trim = trim;
+      controlData.trim = trimVal;
 
       IPAddress localIP = WiFi.localIP();
       IPAddress subnet = WiFi.localIP(); 
@@ -157,4 +164,5 @@ void loop() {
       wifiUdp.endPacket();
     }
   }
+#endif
 }
