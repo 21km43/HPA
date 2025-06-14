@@ -803,7 +803,7 @@ void AWS_task(void *parameter)
   connectAWS();
   while (1)
   {
-    if (!client.loop() || WiFi.status() != WL_CONNECTED)
+    if (WiFi.status() != WL_CONNECTED || !client.loop())
     {
       Serial.println("AWS IoT Disconnected!");
       connectAWS();
