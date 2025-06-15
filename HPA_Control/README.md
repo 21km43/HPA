@@ -8,7 +8,16 @@
 * [KRS-4034HV ICS](https://kondo-robot.com/product/krs-4034hv-ics) ... 最大トルクは41.7kgf・cm。基本的にはトルクが高いほど良い
 * [TX-26PRR-B10K](https://www.tbm-japan.com/product/07joy.html) ... アナログ入力ができれば他のジョイスティックも利用可
 
-## Port
+## Software
+
+* [PlatformIO](https://platformio.org)
+* [VSCode](https://code.visualstudio.com)
+
+## Libraries
+
+* [ICS Library for Arduino ver.3](https://kondo-robot.com/faq/ics-library-a3) ... [lib/IcsClass_V300](./lib/IcsClass_V300)に配置
+
+## GPIO Usage
 * D0 ... RX for ICS
 * D1 ... TX for ICS
 * D2 ... EN for ICS
