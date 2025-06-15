@@ -5,6 +5,13 @@
 * [ESP32-C3-WROOM-02](https://akizukidenshi.com/catalog/g/g117493/)
 * [E220-900T22S(JP)](https://dragon-torch.tech/rf-modules/lora/e220-900t22s-jp)
 
+### Suggested Usage
+
+* [E220-900T22S（JP）-EV1](https://dragon-torch.tech/rf-modules/lora/e220-900t22s-jp-ev1)
+* [ESP32-C3-DevBoard](https://github.com/21km43/ESP32-C3-DevBoard)
+
+[ESP32-C3-DevBoard](https://github.com/21km43/ESP32-C3-DevBoard)の6, 7, 8, 9, 5V, GNDを[E220-900T22S（JP）-EV1](https://dragon-torch.tech/rf-modules/lora/e220-900t22s-jp-ev1)に接続。
+
 ## Software
 
 * [PlatformIO](https://platformio.org)
