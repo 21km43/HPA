@@ -22,7 +22,6 @@
 #include <ctime>
 #include "secrets.h"
 
-
 struct ControlData
 {
   float rudder;   // 操舵角
