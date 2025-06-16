@@ -43,7 +43,7 @@ GPSは[M5Stack用GNSSモジュール 気圧/IMU/地磁気センサ付き（NEO-M
 * Port B ... G8, G9 (Altitude)
 * Port C ... G18, G17 (LoRa)
 * Port D ... G14, G10 (G14 = Toggle RS485 inout for altitude sensor, G10 = Propeller Rotation Speed)
-* Port E ... G13, G5 (GPS)
+* Port E ... G13, G5 (GPS予備)
 
 ## GNSS
 
