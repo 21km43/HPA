@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0" version="27.1.5">
   <diagram name="全体図" id="6K07M-bdMIoADG_4eisC">
-    <mxGraphModel dx="1425" dy="1935" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1181" dy="1804" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -75,7 +75,7 @@
         <mxCell id="qhWnbRb1_LZRBb_jjzeY-21" value="I2C" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#ff0000;" parent="1" vertex="1">
           <mxGeometry x="486.5" y="170" width="46" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="qhWnbRb1_LZRBb_jjzeY-22" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFD966;entryX=0.106;entryY=0.002;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" edge="1">
+        <mxCell id="qhWnbRb1_LZRBb_jjzeY-22" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFB570;entryX=0.106;entryY=0.002;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="339" y="150" as="sourcePoint" />
             <mxPoint x="448.53999999999996" y="190" as="targetPoint" />
@@ -85,13 +85,13 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="qhWnbRb1_LZRBb_jjzeY-23" value="&lt;font&gt;UART&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFD966;" parent="1" vertex="1">
+        <mxCell id="qhWnbRb1_LZRBb_jjzeY-23" value="&lt;font&gt;UART&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFB570;" parent="1" vertex="1">
           <mxGeometry x="389" y="225" width="50" height="20" as="geometry" />
         </mxCell>
         <mxCell id="IAhwxvjueymBkviinYW7-1" value="SPI" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#008000;" parent="1" vertex="1">
           <mxGeometry x="587" y="177.5" width="40" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="IAhwxvjueymBkviinYW7-2" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFD966;entryX=0;entryY=0.75;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="qhWnbRb1_LZRBb_jjzeY-7" target="qhWnbRb1_LZRBb_jjzeY-2" edge="1">
+        <mxCell id="IAhwxvjueymBkviinYW7-2" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFB570;entryX=0;entryY=0.75;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="qhWnbRb1_LZRBb_jjzeY-7" target="qhWnbRb1_LZRBb_jjzeY-2" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="389" y="215" as="sourcePoint" />
             <mxPoint x="439" y="215" as="targetPoint" />
@@ -170,7 +170,7 @@
         <mxCell id="rOg-yM2_KAsI7TXyr_-D-3" value="RS485 driver" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="510" y="240" width="90.5" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="rOg-yM2_KAsI7TXyr_-D-4" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFD966;entryX=0.45;entryY=-0.014;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" target="rOg-yM2_KAsI7TXyr_-D-3" edge="1">
+        <mxCell id="rOg-yM2_KAsI7TXyr_-D-4" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFB570;entryX=0.45;entryY=-0.014;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" target="rOg-yM2_KAsI7TXyr_-D-3" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="550.5" y="220" as="sourcePoint" />
             <mxPoint x="600.5" y="220" as="targetPoint" />
@@ -179,7 +179,7 @@
         <mxCell id="rOg-yM2_KAsI7TXyr_-D-6" value="RS485" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#0000FF;" parent="1" vertex="1">
           <mxGeometry x="560" y="260" width="50" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="rOg-yM2_KAsI7TXyr_-D-7" value="" style="endArrow=none;startArrow=classic;html=1;rounded=0;strokeColor=#9AC7BF;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startFill=1;endFill=0;" parent="1" target="6jxWXBO_irFHfBW3TYrJ-3" edge="1">
+        <mxCell id="rOg-yM2_KAsI7TXyr_-D-7" value="" style="endArrow=none;startArrow=classic;html=1;rounded=0;strokeColor=#67AB9F;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startFill=1;endFill=0;" parent="1" target="6jxWXBO_irFHfBW3TYrJ-3" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="580" y="213" as="sourcePoint" />
             <mxPoint x="759.3600000000001" y="240.28999999999996" as="targetPoint" />
@@ -204,7 +204,7 @@
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-3" value="Arduino UNO R4 Wi-Fi" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="790" y="190" width="141" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-4" value="&lt;div&gt;Wi-FI UDP&lt;/div&gt;&lt;div&gt;(2.4GHz)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#9AC7BF;" parent="1" vertex="1">
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-4" value="&lt;div&gt;Wi-FI UDP&lt;/div&gt;&lt;div&gt;(2.4GHz)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#67AB9F;" parent="1" vertex="1">
           <mxGeometry x="649" y="235" width="81" height="30" as="geometry" />
         </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-5" value="IoT Core" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -271,7 +271,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-23" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFD966;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6jxWXBO_irFHfBW3TYrJ-26" target="6jxWXBO_irFHfBW3TYrJ-3" edge="1">
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-23" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#FFB570;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="6jxWXBO_irFHfBW3TYrJ-26" target="6jxWXBO_irFHfBW3TYrJ-3" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="981" y="204.82999999999998" as="sourcePoint" />
             <mxPoint x="951" y="204.82999999999998" as="targetPoint" />
@@ -281,7 +281,7 @@
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-26" value="ICS変換基板" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="981" y="190" width="100" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-27" value="&lt;font&gt;UART&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFD966;" parent="1" vertex="1">
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-27" value="&lt;font&gt;UART&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FFB570;" parent="1" vertex="1">
           <mxGeometry x="931" y="205" width="50" height="20" as="geometry" />
         </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-29" value="&lt;div&gt;KRS-4034HV ICS&lt;/div&gt;&lt;div&gt;（垂直尾翼）&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
