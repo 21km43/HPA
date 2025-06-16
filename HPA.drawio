@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0" version="27.1.5">
   <diagram name="全体図" id="6K07M-bdMIoADG_4eisC">
-    <mxGraphModel dx="331" dy="1347" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1425" dy="1935" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -207,10 +207,10 @@
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-4" value="&lt;div&gt;Wi-FI UDP&lt;/div&gt;&lt;div&gt;(2.4GHz)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#67AB9F;" parent="1" vertex="1">
           <mxGeometry x="649" y="235" width="81" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-5" value="IoT Core" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-5" value="IoT Core" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="267" y="-10" width="115" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-6" value="DynamoDB" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-6" value="DynamoDB" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="432.5" y="-10" width="115" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-10" value="" style="endArrow=classic;html=1;rounded=0;fontColor=#E6D0DE;strokeColor=#A680B8;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="6jxWXBO_irFHfBW3TYrJ-5" edge="1">
@@ -222,7 +222,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="6jxWXBO_irFHfBW3TYrJ-12" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="6jxWXBO_irFHfBW3TYrJ-12" value="API Gateway" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="594" y="-10" width="115" height="40" as="geometry" />
         </mxCell>
         <mxCell id="6jxWXBO_irFHfBW3TYrJ-14" value="LTE" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#A680B8;" parent="1" vertex="1">
