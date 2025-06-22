@@ -34,6 +34,8 @@ const IPAddress subnet(255, 255, 255, 0); // サブネットマスク
 HTTPClient wifiHttp;         // HTTP通信（スマホ送信用）
 const int HTTP_PORT = 35481; // HTTPポート番号
 
+WebServer server(80);
+
 #pragma region SERVER
 
 #pragma region LORA
@@ -208,8 +210,27 @@ void InitServer()
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(localIP, gateway, subnet);
   WiFi.softAP(SSID, PASSPHRASE);
+
+  server.on("/GetData", []()
+            { server.send(HTTP_CODE_OK, "application/json", json_string); });
+  server.onNotFound([]()
+                    { server.send(HTTP_CODE_OK, "application/json", json_string); });
+  server.begin();
 }
 #pragma endregion
+
+void SendTask(void *pvParameters)
+{
+  while (1)
+  {
+    String url_target = "http://" + SMARTPHONE_IP + ":" + String(HTTP_PORT) + "/post";
+    // Serial.println("Sending data to: " + url_target);
+    wifiHttp.begin(url_target);
+    int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
+    wifiHttp.end();
+    delay(50);
+  }
+}
 
 void setup()
 {
@@ -224,6 +245,7 @@ void setup()
   digitalWrite(M1, LOW);
   InitServer();
   delay(100);
+  xTaskCreatePinnedToCore(SendTask, "SendTask", 8192, NULL, 1, NULL, 1);
 #endif
 }
 
@@ -372,11 +394,9 @@ void loop()
 
   delay(10);
 #else
-  String url_target = "http://" + SMARTPHONE_IP + ":" + String(HTTP_PORT) + "/post";
-  // Serial.println("Sending data to: " + url_target);
-  wifiHttp.begin(url_target);
-  int httpCode = wifiHttp.POST((uint8_t *)json_string, strlen(json_string));
-  wifiHttp.end();
-  delay(50);
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    server.handleClient();
+  }
 #endif
 }
