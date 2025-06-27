@@ -3,6 +3,11 @@
 #ifdef ARDUINO_UNOR4_WIFI
 #include <WiFiS3.h>
 #include <WiFiUdp.h>
+#include <Arduino_FreeRTOS.h>
+
+TaskHandle_t loop_task, udp_task;
+void loop_thread_func(void *pvParameters);
+void udp_thread_func(void *pvParameters);
 
 const char WIFI_SSID[] = "HPA_Measurement";
 const char WIFI_PASSWORD[] = "HPA_Password";
@@ -39,6 +44,7 @@ int trimVal;
 const int trimMax = 10;
 long previous;
 const int TRIM_INTERVAL = 1000;
+const int BUTTON_WAIT = 50; // チャタリング防止
 
 const int TRIM_UP_PIN = 6;
 const int TRIM_DOWN_PIN = 7;
@@ -58,10 +64,6 @@ void setup()
     Serial.begin(115200);
     delay(1000);
 #endif
-#ifdef ARDUINO_UNOR4_WIFI
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    wifiUdp.begin(UDP_PORT);
-#endif
     krs.begin(); // サーボモータの通信初期設定
 
     pinMode(RUDDER_PIN, INPUT);
@@ -74,6 +76,18 @@ void setup()
 
     trimVal = 0;
     previous = millis();
+
+#ifdef ARDUINO_UNOR4_WIFI
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    wifiUdp.begin(UDP_PORT);
+
+    xTaskCreate(loop_thread_func, static_cast<const char *>("Loop Thread"), 4096, nullptr, 2, &loop_task);
+    xTaskCreate(udp_thread_func, static_cast<const char *>("UDP Thread"), 4096, nullptr, 1, &udp_task);
+    vTaskStartScheduler();
+    
+    for (;;)
+        ;
+#endif
 }
 
 void loop()
@@ -87,6 +101,10 @@ void loop()
     {
         trimVal -= 1;
         previous = millis();
+    }
+    if (digitalRead(TRIM_UP_PIN) == HIGH && digitalRead(TRIM_DOWN_PIN) == HIGH && millis() - previous > BUTTON_WAIT)
+    {
+        previous = 0;
     }
 
     if (trimVal > trimMax)
@@ -158,14 +176,23 @@ void loop()
 
     krs.setPos(0, b0);
     krs.setPos(1, b1);
+}
 
 #ifdef ARDUINO_UNOR4_WIFI
-    //----- UDP 送信（100 ms 間隔） -----
-    static unsigned long t0 = 0;
-    if (millis() - t0 >= UDP_INTERVAL)
+void loop_thread_func(void *pvParameters)
+{
+    for (;;)
     {
-        t0 = millis();
+        loop();
+        delay(10);
+    }
+}
 
+void udp_thread_func(void *pvParameters)
+{
+    //----- UDP 送信（100 ms 間隔） -----
+    for (;;)
+    {
         if (WiFi.status() == WL_CONNECTED)
         {
             ControlData controlData;
@@ -173,7 +200,7 @@ void loop()
             controlData.elevator = a1;
             controlData.trim = trimVal;
 
-            // 計測のIPアドレスが不定なので、ブロードキャストとして送信
+            // 計測のIPアドレスが固定でないため、ブロードキャストとして送信
             IPAddress localIP = WiFi.localIP();
             IPAddress subnet = WiFi.localIP();
             IPAddress measurementIP(
@@ -186,6 +213,7 @@ void loop()
             wifiUdp.write((uint8_t *)(&controlData), sizeof(ControlData));
             wifiUdp.endPacket();
         }
+        delay(100);
     }
-#endif
 }
+#endif
