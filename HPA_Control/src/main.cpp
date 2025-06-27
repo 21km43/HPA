@@ -190,9 +190,9 @@ void loop_thread_func(void *pvParameters)
 
 void udp_thread_func(void *pvParameters)
 {
-    //----- UDP 送信（100 ms 間隔） -----
     for (;;)
     {
+        //----- UDP 送信（100 ms 間隔） -----
         if (WiFi.status() == WL_CONNECTED)
         {
             ControlData controlData;
