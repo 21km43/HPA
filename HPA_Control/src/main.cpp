@@ -3,11 +3,6 @@
 #ifdef ARDUINO_UNOR4_WIFI
 #include <WiFiS3.h>
 #include <WiFiUdp.h>
-#include <Arduino_FreeRTOS.h>
-
-TaskHandle_t loop_task, udp_task;
-void loop_thread_func(void *pvParameters);
-void udp_thread_func(void *pvParameters);
 
 const char WIFI_SSID[] = "HPA_Measurement";
 const char WIFI_PASSWORD[] = "HPA_Password";
@@ -80,13 +75,6 @@ void setup()
 #ifdef ARDUINO_UNOR4_WIFI
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     wifiUdp.begin(UDP_PORT);
-
-    xTaskCreate(loop_thread_func, static_cast<const char *>("Loop Thread"), 4096, nullptr, 2, &loop_task);
-    xTaskCreate(udp_thread_func, static_cast<const char *>("UDP Thread"), 4096, nullptr, 1, &udp_task);
-    vTaskStartScheduler();
-    
-    for (;;)
-        ;
 #endif
 }
 
@@ -104,7 +92,7 @@ void loop()
     }
     if (digitalRead(TRIM_UP_PIN) == HIGH && digitalRead(TRIM_DOWN_PIN) == HIGH && millis() - previous > BUTTON_WAIT)
     {
-        previous = 0;
+        previous = millis() - TRIM_INTERVAL + BUTTON_WAIT;
     }
 
     if (trimVal > trimMax)
@@ -165,8 +153,8 @@ void loop()
     Serial.println(a1);
 #endif
 
-    b0 = (int)(7500 + 1381.3 + rudMax * a0);
-    b1 = (int)(7500 + 1547.3 - eleMax * a1 + trim_min * trimVal);
+    b0 = (int)(7500 + 1353.5 + rudMax * a0);
+    b1 = (int)(7500 + 1408.4 - eleMax * a1 + trim_min * trimVal);
 
 #ifdef SERIAL_DEBUG
     Serial.print(b0);
@@ -176,44 +164,42 @@ void loop()
 
     krs.setPos(0, b0);
     krs.setPos(1, b1);
-}
 
 #ifdef ARDUINO_UNOR4_WIFI
-void loop_thread_func(void *pvParameters)
-{
-    for (;;)
-    {
-        loop();
-        delay(10);
-    }
-}
+    //----- UDP 送信（100 ms 間隔） -----
+    static unsigned long t0 = 0;
+    static IPAddress measurementIP;
+    static bool ipInitialized = false;
 
-void udp_thread_func(void *pvParameters)
-{
-    for (;;)
+    if (millis() - t0 >= UDP_INTERVAL)
     {
-        //----- UDP 送信（100 ms 間隔） -----
+        t0 = millis();
         if (WiFi.status() == WL_CONNECTED)
         {
+            if (!ipInitialized)
+            {
+                ipInitialized = true;
+                IPAddress localIP = WiFi.localIP();
+                IPAddress subnet = WiFi.localIP();
+                measurementIP[0] = localIP[0] | (~subnet[0]);
+                measurementIP[1] = localIP[1] | (~subnet[1]);
+                measurementIP[2] = localIP[2] | (~subnet[2]);
+                measurementIP[3] = localIP[3] | (~subnet[3]);
+            }
+
             ControlData controlData;
             controlData.rudder = a0;
             controlData.elevator = a1;
             controlData.trim = trimVal;
 
-            // 計測のIPアドレスが固定でないため、ブロードキャストとして送信
-            IPAddress localIP = WiFi.localIP();
-            IPAddress subnet = WiFi.localIP();
-            IPAddress measurementIP(
-                localIP[0] | (~subnet[0]),
-                localIP[1] | (~subnet[1]),
-                localIP[2] | (~subnet[2]),
-                localIP[3] | (~subnet[3]));
-
             wifiUdp.beginPacket(measurementIP, UDP_PORT);
             wifiUdp.write((uint8_t *)(&controlData), sizeof(ControlData));
             wifiUdp.endPacket();
         }
-        delay(100);
+        else
+        {
+            ipInitialized = false;
+        }
     }
-}
 #endif
+}
