@@ -1,6 +1,6 @@
 # 人力飛行機 電装システム
 
-人力飛行機の電装システムリポジトリ。2025年鳥人間コンテストにて利用
+人力飛行機の電装システムリポジトリ
 
 - [HPA_Control](/HPA_Control) ... 尾翼操舵システム
 - [HPA_Measurement](/HPA_Measurement) ... 機体計測システム
@@ -19,3 +19,5 @@ git update-index --assume-unchanged HPA_Measurement/src/secrets.h
 ## Diagram
 
 ![HPA.drawio](HPA.drawio.svg)
+
+## Copyright
