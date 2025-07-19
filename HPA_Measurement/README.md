@@ -130,7 +130,7 @@ aws dynamodb delete-table --table-name HPA_Table
 
 ### DynamoDBからのCSVダウンロード
 
-CloudShellで以下のコマンドを実行
+CloudShellで以下のコマンドを実行（データベースのサイズが大きいと失敗する可能性が上がる。その場合はAWS CLIを使ってローカルで実行）
 
 ```bash
 aws dynamodb scan --table-name HPA_Table | jq -r '.Items[] | [.Timestamp.N, .Date.S, .Time.S, .Latitude.N, .Longitude.N, .GPSAltitude.N, .GPSCourse.N, .GPSSpeed.N, .AccelX.N, .AccelY.N, .AccelZ.N, .GyroX.N, .GyroY.N, .GyroZ.N, .MagX.N, .MagY.N, .MagZ.N, .Roll_Mad6.N, .Pitch_Mad6.N, .Yaw_Mad6.N, .Roll_Mad9.N, .Pitch_Mad9.N, .Yaw_Mad9.N, .Roll_Mah6.N, .Pitch_Mah6.N, .Yaw_Mah6.N, .Roll_Mah9.N, .Pitch_Mah9.N, .Yaw_Mah9.N, .Temperature.N, .Pressure.N, .GroundPressure.N, .BMPAltitude.N, .Altitude.N, .AirSpeed.N, .PropellerRotationSpeed.N, .Rudder.N, .Elevator.N, .Trim.N, .LoRaRSSI.N, .RunningTime.N] | @csv' >> out.csv
