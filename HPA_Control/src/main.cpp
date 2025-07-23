@@ -29,9 +29,9 @@ int off0;
 int off1;
 float a0 = 0.0; // rudder
 float a1 = 0.0; // elevater
-float rudMax = 833.3;
-float eleMax = 555.6;
-float trim_min = 13.9;
+const float rudMax = 833.3;
+const float eleMax = 555.6;
+const float trim_min = 13.9;
 int b0 = 0;
 int b1 = 0;
 
