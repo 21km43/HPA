@@ -19,13 +19,13 @@ GPSは[M5Stack用GNSSモジュール 気圧/IMU/地磁気センサ付き（NEO-M
 * [RE12D-100-201-1](https://www.nidec-components.com/j/product/detail/00000062)
 * [RS485 750cm Ultrasonic Level Sensor](https://www.seeedstudio.com/RS485-750cm-Ultrasonic-Level-Sensor-p-5587.html)
 
-### Wireless unit
+### Wireless unit (LoRa)
 
 * [E220-900T22S(JP)](https://dragon-torch.tech/rf-modules/lora/e220-900t22s-jp)
 
 ### Others
 
-* [RS485 driver unit](https://github.com/21km43/UART-RS485)
+* [RS485 driver unit](https://github.com/21km43/UART-RS485) ... 高度計のRS485対応
 
 ## Software
 
