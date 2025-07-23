@@ -11,7 +11,7 @@
 * [M5Stack custom bottom](https://github.com/xoseperez/m5stack-rfm95/blob/master/enclosure/m5stack-rfm95-bottom-v2.stl)
 * microSD (up to 16GB)
 
-GPSは[M5Stack用GNSSモジュール 気圧/IMU/地磁気センサ付き（NEO-M9N/BMP280/BMI270/BMM150）](https://www.switch-science.com/products/9276?_pos=2&_sid=b1554245d&_ss=r)のGPS動作が不安定であったため、[M5Stack用GPSユニット v1.1](https://www.switch-science.com/products/10037)の方を利用した。
+GPSは[M5Stack用GNSSモジュール 気圧/IMU/地磁気センサ付き（NEO-M9N/BMP280/BMI270/BMM150）](https://www.switch-science.com/products/9276?_pos=2&_sid=b1554245d&_ss=r)のGPS動作が不安定であった（アクティブアンテナの問題だと思われるのでアンテナを取り換えれば解消するかも）ため、[M5Stack用GPSユニット v1.1](https://www.switch-science.com/products/10037)の方を利用した。本来であれば操舵→計測は有線で送信するのが望ましいが、GPSの代替案を採用したことによりポートが不足したためUDPで送信。
 
 ### Sensors
 
