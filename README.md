@@ -8,7 +8,10 @@
 
 詳細は各フォルダのREADMEを参照
 
-- [Web UI](https://github.com/21km43/WASA_2025_GUI_JS/tree/main)
+## 関連ツール
+
+- [Android UI](https://github.com/WASA-EET/EET23)
+- [Web UI](https://github.com/21km43/WASA_2025_GUI_JS)
 
 ## Notice
 
