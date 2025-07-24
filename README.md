@@ -8,6 +8,8 @@
 
 詳細は各フォルダのREADMEを参照
 
+- [Web UI](https://github.com/21km43/WASA_2025_GUI_JS/tree/main)
+
 ## Notice
 
 `secrets.h`にWi-Fiのパラメータ、AWSの秘密鍵等を設定する。以下のコマンドでGitの追跡対象から除外する。
