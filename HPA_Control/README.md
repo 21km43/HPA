@@ -1,5 +1,9 @@
 # 操舵系統
 
+## TODO
+
+- 計測システムの都合により、操舵→計測への操舵データの送信をUDPで行っているが、有線（近距離ならUART、長距離ならRS485）で行う方が良い。
+
 ## Hardware
 
 * [Arduino UNO R4 WiFi](https://docs.arduino.cc/hardware/uno-r4-wifi) ... [Arduino UNO R4 Minima](https://docs.arduino.cc/hardware/uno-r4-minima)や[Arduino UNO R3](https://docs.arduino.cc/hardware/uno-rev3)でも動作可能。ただし計測へのUDP送信機能は使えなくなる。
