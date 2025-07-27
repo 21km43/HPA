@@ -64,7 +64,17 @@
 
 MQTTでは、モノの名前を`HPA`、Publish時のトピック名を`hpa/pub`としている。以下、MQTTブローカーをAWSに構築した場合の情報を掲載する。
 
-### 参考情報
+### Android, SIM
+
+テザリングを利用する必要があるため、機体にモバイル回線が利用可能なスマートフォンの搭載が必須となる（IP68以上の防水性能が必要）。同時にスマートフォンはパイロットへの表示系統として利用する。SIMは[povo 2.0](https://povo.jp)を利用している。nano SIMでも良いが、スマートフォンが対応していればeSIMを利用することを推奨する。課金せずとも128kbpsで通信が可能なため、基本的には課金は不要で鳥人間コンテストでのみ課金した。ただし全く課金していないと180日で強制的に解約となる点には注意すること。
+
+### AWSへのデータアップロードに関する参考情報
+
+使用しているAWSのサービスは以下の通り。従量制課金のため常時発生するコストは無し。TFの実施状況にもよるが課金額は月額10~200円程度となる。
+
+- [IoT Core](https://aws.amazon.com/jp/iot-core)
+- [DynamoDB](https://aws.amazon.com/jp/dynamodb)
+- [API Gateway](https://aws.amazon.com/jp/api-gateway)
 
 - [マイコン ESP32 を使って AWS IoT Core と Pub/Sub 通信するまで](https://dev.classmethod.jp/articles/esp32-aws-iot-pubsub-basic)
 - [AWS IoT Coreで受け取ったデバイスデータをAmazon DynamoDBに保存してみた](https://dev.classmethod.jp/articles/saving-device-data-from-iot-core-to-dynamodb)
