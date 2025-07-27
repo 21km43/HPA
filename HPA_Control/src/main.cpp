@@ -153,8 +153,8 @@ void loop()
     Serial.println(a1);
 #endif
 
-    b0 = (int)(7500 + 1353.5 + rudMax * a0);
-    b1 = (int)(7500 + 1408.4 - eleMax * a1 + trim_min * trimVal);
+    b0 = (int)(7500 + 1492.5 + rudMax * a0);
+    b1 = (int)(7500 + 1283.3 - eleMax * a1 + trim_min * trimVal);
 
 #ifdef SERIAL_DEBUG
     Serial.print(b0);
