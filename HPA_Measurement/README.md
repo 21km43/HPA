@@ -76,6 +76,8 @@ MQTTでは、モノの名前を`HPA`、Publish時のトピック名を`hpa/pub`�
 - [DynamoDB](https://aws.amazon.com/jp/dynamodb)
 - [API Gateway](https://aws.amazon.com/jp/api-gateway)
 
+以下の情報に参考にしてサービスを構築する。
+
 - [マイコン ESP32 を使って AWS IoT Core と Pub/Sub 通信するまで](https://dev.classmethod.jp/articles/esp32-aws-iot-pubsub-basic)
 - [AWS IoT Coreで受け取ったデバイスデータをAmazon DynamoDBに保存してみた](https://dev.classmethod.jp/articles/saving-device-data-from-iot-core-to-dynamodb)
 
