@@ -10,7 +10,7 @@
 
 ## 関連ツール
 
-- [Android UI](https://github.com/WASA-EET/EET23) ... 3年前に作った骨董品なのでそろそろ廃止してWeb UIに統一した方が良い
+- [Android UI](https://github.com/WASA-EET/EET23) ... そろそろ廃止してWeb UIに統一した方が良い
 - [Web UI](https://github.com/21km43/WASA_2025_GUI_JS)
 
 ## 2025鳥コン使用記録
@@ -33,4 +33,5 @@ git update-index --assume-unchanged HPA_Measurement/src/secrets.h
 ## Diagram
 
 ![HPA.drawio](HPA.drawio.svg)
+
 
